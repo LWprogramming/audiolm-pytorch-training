@@ -88,17 +88,6 @@ soundstream_trainer.train()
 
 #############
 
-# hubert checkpoints can be downloaded at
-# https://github.com/facebookresearch/fairseq/tree/main/examples/hubert
-if not os.path.isdir("hubert"):
-  os.makedirs("hubert")
-if not os.path.isfile(f"{prefix}/{hubert_ckpt}"):
-  hubert_ckpt_download = f"https://dl.fbaipublicfiles.com/{hubert_ckpt}"
-  urllib.request.urlretrieve(hubert_ckpt_download, f"{prefix}/{hubert_ckpt}")
-if not os.path.isfile(f"{prefix}/{hubert_quantizer}"):
-  hubert_quantizer_download = f"https://dl.fbaipublicfiles.com/{hubert_quantizer}"
-  urllib.request.urlretrieve(hubert_quantizer_download, f"{prefix}/{hubert_quantizer}")
-
 wav2vec = HubertWithKmeans(
     checkpoint_path = f"{prefix}/{hubert_ckpt}",
     kmeans_path = f"{prefix}/{hubert_quantizer}"
