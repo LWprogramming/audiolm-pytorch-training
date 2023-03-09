@@ -1,5 +1,5 @@
 import os
-import urllib
+import urllib.request
 
 prefix = "/fsx/itsleonwu/audiolm-pytorch"
 dataset_folder = f"{prefix}/placeholder_dataset"
@@ -8,8 +8,8 @@ hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuB
 
 # hubert checkpoints can be downloaded at
 # https://github.com/facebookresearch/fairseq/tree/main/examples/hubert
-if not os.path.isdir("hubert"):
-  os.makedirs("hubert")
+if not os.path.isdir(f"{prefix}/hubert"):
+  os.makedirs("{prefix}/hubert")
 if not os.path.isfile(f"{prefix}/{hubert_ckpt}"):
   hubert_ckpt_download = f"https://dl.fbaipublicfiles.com/{hubert_ckpt}"
   urllib.request.urlretrieve(hubert_ckpt_download, f"{prefix}/{hubert_ckpt}")
