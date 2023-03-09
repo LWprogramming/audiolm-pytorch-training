@@ -1,7 +1,7 @@
 import os
 import urllib.request
 
-prefix = "/fsx/itsleonwu/audiolm-pytorch"
+prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 

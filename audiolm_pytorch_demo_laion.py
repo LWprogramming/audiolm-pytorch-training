@@ -14,7 +14,7 @@ import torchaudio
 # from botocore.errorfactory import ClientError
 
 # define all dataset paths, checkpoints, etc
-prefix = "/fsx/itsleonwu/audiolm-pytorch"
+prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 dataset_folder = f"{prefix}/placeholder_dataset"
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
