@@ -16,10 +16,12 @@ urllib.request.urlretrieve("https://github.com/LWProgramming/audiolm-pytorch/arc
 with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
     zip_ref.extractall("audiolm-pytorch")
 
-# move library itself to current directory
-subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/audiolm_pytorch', '.'])
+
 # install requirements from the patched audiolm-pytorch directory
 subprocess.run(['pip', 'install', 'audiolm-pytorch/audiolm-pytorch-personal_hacks'])
+
+# move library itself to current directory
+subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/audiolm_pytorch', '.'])
 
 # # move setup.py to current directory for requirements
 # subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/setup.py', '.'])
