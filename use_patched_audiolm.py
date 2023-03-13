@@ -19,12 +19,11 @@ with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
 
 # move library itself to current directory
 subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/audiolm_pytorch', '.'])
-
-# move setup.py to current directory for requirements
-subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/setup.py', '.'])
-
 # install requirements from the patched audiolm-pytorch directory
-subprocess.run(['pip', 'install', '.'])
+subprocess.run(['pip', 'install', 'audiolm-pytorch/audiolm-pytorch-personal_hacks'])
+
+# # move setup.py to current directory for requirements
+# subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/setup.py', '.'])
 
 # remove the rest of the audiolm-pytorch directory
 subprocess.run(['rm', '-rf', 'audiolm-pytorch'])
