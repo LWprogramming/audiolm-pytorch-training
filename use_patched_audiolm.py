@@ -4,6 +4,7 @@ import urllib.request
 import os
 import zipfile
 import subprocess
+import shutil
 
 zip_file_path = "audiolm-pytorch-personal-hacks.zip"
 if os.path.isfile(zip_file_path):
