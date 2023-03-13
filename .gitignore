@@ -130,3 +130,7 @@ dmypy.json
 
 # LAION-related
 #*laion*
+
+# custom-patched libs
+audiolm_pytorch
+audiolm-pytorch-personal-hacks.zip
