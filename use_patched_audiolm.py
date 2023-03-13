@@ -10,7 +10,6 @@ zip_file_path = "audiolm-pytorch-personal-hacks.zip"
 if os.path.isfile(zip_file_path):
     replace = input("personal hacks zip already exists. replacing (as well as audiolm_pytorch library...)")
     os.remove(zip_file_path)
-    os.remove("setup.py")
     shutil.rmtree("audiolm_pytorch")
 urllib.request.urlretrieve("https://github.com/LWProgramming/audiolm-pytorch/archive/refs/heads/personal_hacks.zip", zip_file_path)
 
