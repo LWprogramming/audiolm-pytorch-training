@@ -7,6 +7,8 @@ import subprocess
 import shutil
 
 zip_file_path = "audiolm-pytorch-personal-hacks.zip"
+input("type anything to confirm that you have pushed the latest version of the personal_hacks branch to Github as well!!")
+
 if os.path.isfile(zip_file_path):
     replace = input("personal hacks zip already exists. replacing (as well as audiolm_pytorch library...)")
     os.remove(zip_file_path)
