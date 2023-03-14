@@ -106,7 +106,7 @@ semantic_trainer = SemanticTransformerTrainer(
     wav2vec = wav2vec,
     folder = dataset_folder,
     batch_size = 1,
-    data_max_length = 320 * 32,
+    data_max_length = 2001,
     num_train_steps = 1,
     results_folder = f"{prefix}/semantic_results",
 )
