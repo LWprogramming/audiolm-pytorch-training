@@ -189,11 +189,11 @@ with open(filename, "w") as f:
     f.write("cpu time sorted:\n")
     f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10)}")
     f.write("\n cuda time sorted:\n")
-    f.write(f"{prof.key_averages().table(sort_by="cuda_time_total", row_limit=10)}")
+    f.write(f"{prof.key_averages().table(sort_by='cuda_time_total', row_limit=10)}")
     f.write("\ncpu memory self\n") # excludes children memory allocated
-    f.write(f"{prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10)}")
+    f.write(f"{prof.key_averages().table(sort_by='self_cpu_memory_usage', row_limit=10)}")
     f.write("\ncpu memory\n") # includes children memory allocated
-    f.write(f"{prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10)}\n")
+    f.write(f"{prof.key_averages().table(sort_by='cpu_memory_usage', row_limit=10)}\n")
 
 
 
