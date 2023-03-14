@@ -184,7 +184,7 @@ with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_sh
         sample_rate = 16000
         torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
-filename = f"{prefix}/profile-{datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")}.txt"
+filename = f"{prefix}/profile-{datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}.txt"
 with open(filename, "w") as f:
     f.write("cpu time sorted:\n")
     f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10)}")
