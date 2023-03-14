@@ -187,7 +187,7 @@ with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_sh
 filename = f"{prefix}/profile-{datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}.txt"
 with open(filename, "w") as f:
     f.write("cpu time sorted:\n")
-    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10)}")
+    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
     f.write("\n cuda time sorted:\n")
     f.write(f"{prof.key_averages().table(sort_by='cuda_time_total', row_limit=10)}")
     f.write("\ncpu memory self\n") # excludes children memory allocated
