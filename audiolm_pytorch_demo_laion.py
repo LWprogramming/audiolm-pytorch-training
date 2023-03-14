@@ -177,23 +177,28 @@ audiolm = AudioLM(
     fine_transformer = fine_transformer
 )
 
-with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, profile_memory=True, use_cuda=True) as prof:
-    with record_function("model_inference"):
-        generated_wav = audiolm(batch_size = 1)
-        output_path = f"{prefix}/out.wav"
-        sample_rate = 16000
-        torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
+generated_wav = audiolm(batch_size = 1)
+output_path = f"{prefix}/out.wav"
+sample_rate = 16000
+torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
-filename = f"{prefix}/profile-{datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}.txt"
-with open(filename, "w") as f:
-    f.write("cpu time sorted:\n")
-    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
-    f.write("\n cuda time sorted:\n")
-    f.write(f"{prof.key_averages().table(sort_by='cuda_time_total', row_limit=10)}")
-    f.write("\ncpu memory self\n") # excludes children memory allocated
-    f.write(f"{prof.key_averages().table(sort_by='self_cpu_memory_usage', row_limit=10)}")
-    f.write("\ncpu memory\n") # includes children memory allocated
-    f.write(f"{prof.key_averages().table(sort_by='cpu_memory_usage', row_limit=10)}\n")
+# with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, profile_memory=True, use_cuda=True) as prof:
+#     with record_function("model_inference"):
+#         generated_wav = audiolm(batch_size = 1)
+#         output_path = f"{prefix}/out.wav"
+#         sample_rate = 16000
+#         torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
+
+# filename = f"{prefix}/profile-{datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}.txt"
+# with open(filename, "w") as f:
+#     f.write("cpu time sorted:\n")
+#     f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
+#     f.write("\n cuda time sorted:\n")
+#     f.write(f"{prof.key_averages().table(sort_by='cuda_time_total', row_limit=10)}")
+#     f.write("\ncpu memory self\n") # excludes children memory allocated
+#     f.write(f"{prof.key_averages().table(sort_by='self_cpu_memory_usage', row_limit=10)}")
+#     f.write("\ncpu memory\n") # includes children memory allocated
+#     f.write(f"{prof.key_averages().table(sort_by='cpu_memory_usage', row_limit=10)}\n")
 
 
 
