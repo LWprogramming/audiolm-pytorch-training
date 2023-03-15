@@ -91,9 +91,9 @@ make_placeholder_dataset()
 #############
 
 wav2vec = HubertWithKmeans(
-    # use_mert = True,
-    checkpoint_path = f"{prefix}/{hubert_ckpt}",
-    # checkpoint_path = None,
+    use_mert = True,
+    # checkpoint_path = f"{prefix}/{hubert_ckpt}",
+    checkpoint_path = None,
     kmeans_path = f"{prefix}/{hubert_quantizer}"
 )
 
