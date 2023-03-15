@@ -58,8 +58,10 @@ def make_placeholder_dataset():
   if os.path.isdir(dataset_folder):
     return
   os.makedirs(dataset_folder)
-  save_wav(f"{dataset_folder}/example.wav", get_sinewave())
-  save_wav(f"{dataset_folder}/example2.wav", get_sinewave(duration_ms=500))
+  save_wav(f"{dataset_folder}/example.wav", get_sinewave(duration_ms=1000))
+  save_wav(f"{dataset_folder}/example2.wav", get_sinewave(duration_ms=1050))
+  save_wav(f"{dataset_folder}/example3.wav", get_sinewave(duration_ms=1002, freq=515.0))
+  save_wav(f"{dataset_folder}/example4.wav", get_sinewave(duration_ms=1003, freq=334.0))
   os.makedirs(f"{dataset_folder}/subdirectory")
   save_wav(f"{dataset_folder}/subdirectory/example.wav", get_sinewave(freq=330.0))
 make_placeholder_dataset()
