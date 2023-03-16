@@ -123,7 +123,7 @@ coarse_transformer = CoarseTransformer(
     num_semantic_tokens = wav2vec.codebook_size,
     codebook_size = 1024,
     num_coarse_quantizers = 3,
-    dim = 512,
+    dim = 1024,
     depth = 6
 )
 
@@ -150,7 +150,7 @@ fine_transformer = FineTransformer(
     num_coarse_quantizers = 3,
     num_fine_quantizers = 5,
     codebook_size = 1024,
-    dim = 512,
+    dim = 1024,
     depth = 6
 )
 
