@@ -70,7 +70,7 @@ make_placeholder_dataset()
 
 soundstream = AudioLMSoundStream(
     codebook_size = 1024,
-    rq_num_quantizers = 9,
+    rq_num_quantizers = 8,
     attn_window_size = 128,       # local attention receptive field at bottleneck
     attn_depth = 2                # 2 local attention transformer blocks - the soundstream folks were not experts with attention, so i took the liberty to add some. encodec went with lstms, but attention should be better
 )
@@ -148,7 +148,7 @@ coarse_trainer.train()
 
 fine_transformer = FineTransformer(
     num_coarse_quantizers = 3,
-    num_fine_quantizers = 6,
+    num_fine_quantizers = 5,
     codebook_size = 1024,
     dim = 512,
     depth = 6
