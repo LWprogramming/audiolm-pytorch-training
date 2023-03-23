@@ -96,6 +96,7 @@ encodec = EncodecWrapper()
 
 #############
 
+raise AssertionError("don't forget to use_mert when the encodec_support PR is merged")
 wav2vec = HubertWithKmeans(
     # use_mert = True,
     checkpoint_path = f"{prefix}/{hubert_ckpt}",

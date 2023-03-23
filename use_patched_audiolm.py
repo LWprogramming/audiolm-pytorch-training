@@ -6,6 +6,7 @@ import zipfile
 import subprocess
 import shutil
 
+raise AssertionError("don't forget to revert the encodec supoprt commit when the encodec_support PR is merged")
 zip_file_path = "audiolm-pytorch-encodec-support.zip"
 input("type anything to confirm that you have pushed the latest version of the encodec_support branch to Github as well!!")
 
