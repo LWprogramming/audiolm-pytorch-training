@@ -70,7 +70,7 @@ make_placeholder_dataset()
 
 #######
 
-# soundstream = AudioLMSoundStream(
+# codec = AudioLMSoundStream(
 #     codebook_size = 1024,
 #     rq_num_quantizers = 8,
 #     attn_window_size = 128,       # local attention receptive field at bottleneck
@@ -133,7 +133,7 @@ coarse_transformer = CoarseTransformer(
 
 coarse_trainer = CoarseTransformerTrainer(
     transformer = coarse_transformer,
-    soundstream = encodec,
+    codec = encodec,
     wav2vec = wav2vec,
     folder = dataset_folder,
     batch_size = 1,
@@ -160,7 +160,7 @@ fine_transformer = FineTransformer(
 
 fine_trainer = FineTransformerTrainer(
     transformer = fine_transformer,
-    soundstream = encodec,
+    codec = encodec,
     folder = dataset_folder,
     batch_size = 1,
     data_max_length = 320 * 32,
@@ -179,7 +179,7 @@ fine_trainer.train()
 
 audiolm = AudioLM(
     wav2vec = wav2vec,
-    soundstream = encodec,
+    codec = encodec,
     semantic_transformer = semantic_transformer,
     coarse_transformer = coarse_transformer,
     fine_transformer = fine_transformer
