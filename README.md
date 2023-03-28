@@ -1,2 +1,3 @@
 # audiolm-pytorch-training
-temporary repo to store code i use to train audiolm
+
+This repository contains my scripts to train AudioLM models, using the [audiolm-pytorch](https://github.com/lucidrains/audiolm-pytorch) library by lucidrains and the my own modifications in the [personal_hacks branch](https://github.com/LWprogramming/audiolm-pytorch/tree/personal_hacks). The AudioLM model is a mostly 1-1 reproduction of the paper ["AudioLM: a Language Modeling Approach to Audio Generation"](https://arxiv.org/abs/2209.03143).
