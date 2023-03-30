@@ -16,6 +16,7 @@ def main(branch_name):
         replace = input(f"{branch_name} zip already exists. replacing (as well as audiolm_pytorch library...)")
         os.remove(zip_file_path)
         shutil.rmtree("audiolm_pytorch")
+    print(f"name: https://github.com/LWProgramming/audiolm-pytorch/archive/refs/heads/{branch_name}.zip")
     urllib.request.urlretrieve(f"https://github.com/LWProgramming/audiolm-pytorch/archive/refs/heads/{branch_name}.zip", zip_file_path)
 
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
