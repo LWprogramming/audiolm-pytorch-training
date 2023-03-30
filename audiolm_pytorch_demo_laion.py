@@ -70,33 +70,33 @@ make_placeholder_dataset()
 
 #######
 
-codec = AudioLMSoundStream(
-    codebook_size = 1024,
-    rq_num_quantizers = 8,
-    attn_window_size = 128,       # local attention receptive field at bottleneck
-    attn_depth = 2                # 2 local attention transformer blocks - the soundstream folks were not experts with attention, so i took the liberty to add some. encodec went with lstms, but attention should be better
-)
+# codec = AudioLMSoundStream(
+#     codebook_size = 1024,
+#     rq_num_quantizers = 8,
+#     attn_window_size = 128,       # local attention receptive field at bottleneck
+#     attn_depth = 2                # 2 local attention transformer blocks - the soundstream folks were not experts with attention, so i took the liberty to add some. encodec went with lstms, but attention should be better
+# )
 
-soundstream_trainer = SoundStreamTrainer(
-    codec,
-    folder = dataset_folder,
-    lr=3e-4,
-    batch_size = 4,
-    grad_accum_every = 8, # effective batch size of batch_size * grad_accum_every = 32
-    data_max_length_seconds = 2,  # train on 2 second audio
-    results_folder = f"{prefix}/soundstream_results",
-    save_results_every = 4,
-    save_model_every = 4,
-    num_train_steps = 9
-).cuda()
+# soundstream_trainer = SoundStreamTrainer(
+#     codec,
+#     folder = dataset_folder,
+#     lr=3e-4,
+#     batch_size = 4,
+#     grad_accum_every = 8, # effective batch size of batch_size * grad_accum_every = 32
+#     data_max_length_seconds = 2,  # train on 2 second audio
+#     results_folder = f"{prefix}/soundstream_results",
+#     save_results_every = 4,
+#     save_model_every = 4,
+#     num_train_steps = 9
+# ).cuda()
 
-soundstream_trainer.train()
+# soundstream_trainer.train()
 
-# codec = EncodecWrapper()
+codec = EncodecWrapper()
 
 #############
 
-# raise AssertionError("note to self, try larger batch size and grad update https://github.com/lucidrains/audiolm-pytorch/discussions/107#discussioncomment-5373414")
+raise AssertionError("note to self, try larger batch size and grad update https://github.com/lucidrains/audiolm-pytorch/discussions/107#discussioncomment-5373414")
 wav2vec = HubertWithKmeans(
     # use_mert = True,
     checkpoint_path = f"{prefix}/{hubert_ckpt}",
