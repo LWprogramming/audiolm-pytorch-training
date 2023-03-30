@@ -5,7 +5,7 @@ import struct
 import os
 import urllib.request
 # import tarfile
-# from audiolm_pytorch import AudioLMSoundStream, SoundStreamTrainer
+from audiolm_pytorch import AudioLMSoundStream, SoundStreamTrainer
 from audiolm_pytorch import EncodecWrapper
 from audiolm_pytorch import HubertWithKmeans, SemanticTransformer, SemanticTransformerTrainer, HubertWithKmeans, CoarseTransformer, CoarseTransformerWrapper, CoarseTransformerTrainer, FineTransformer, FineTransformerWrapper, FineTransformerTrainer, AudioLM
 from torch import nn
