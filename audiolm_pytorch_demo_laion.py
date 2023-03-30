@@ -78,7 +78,7 @@ codec = AudioLMSoundStream(
 )
 
 soundstream_trainer = SoundStreamTrainer(
-    soundstream,
+    codec,
     folder = dataset_folder,
     lr=3e-4,
     batch_size = 4,
