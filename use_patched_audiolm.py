@@ -1,32 +1,38 @@
-# use the personal_hacks branch of my fork of the repo to get print statements, etc etc.
-
+import argparse
 import urllib.request
 import os
 import zipfile
 import subprocess
 import shutil
 
-zip_file_path = "audiolm-pytorch-personal-hacks.zip"
-input("type anything to confirm that you have pushed the latest version of the personal_hacks branch to Github as well!!")
+def process_branch_name(branch_name):
+    return branch_name.replace('_', '-')
 
-if os.path.isfile(zip_file_path):
-    replace = input("personal hacks zip already exists. replacing (as well as audiolm_pytorch library...)")
-    os.remove(zip_file_path)
-    shutil.rmtree("audiolm_pytorch")
-urllib.request.urlretrieve("https://github.com/LWProgramming/audiolm-pytorch/archive/refs/heads/personal_hacks.zip", zip_file_path)
+def main(branch_name):
+    zip_file_path = f"audiolm-pytorch-{branch_name}.zip"
+    input("type anything to confirm that you have pushed the latest version of the branch to Github as well!!")
 
-with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-    zip_ref.extractall("audiolm-pytorch")
+    if os.path.isfile(zip_file_path):
+        replace = input(f"{branch_name} zip already exists. replacing (as well as audiolm_pytorch library...)")
+        os.remove(zip_file_path)
+        shutil.rmtree("audiolm_pytorch")
+    urllib.request.urlretrieve(f"https://github.com/LWProgramming/audiolm-pytorch/archive/refs/heads/{branch_name}.zip", zip_file_path)
 
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall("audiolm-pytorch")
 
-# install requirements from the patched audiolm-pytorch directory
-subprocess.run(['pip', 'install', 'audiolm-pytorch/audiolm-pytorch-personal_hacks'])
+    # install requirements from the patched audiolm-pytorch directory
+    subprocess.run(['pip', 'install', f'audiolm-pytorch/audiolm-pytorch-{branch_name}'])
 
-# move library itself to current directory
-subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/audiolm_pytorch', '.'])
+    # move library itself to current directory
+    subprocess.run(['mv', f'audiolm-pytorch/audiolm-pytorch-{branch_name}/audiolm_pytorch', '.'])
 
-# # move setup.py to current directory for requirements
-# subprocess.run(['mv', 'audiolm-pytorch/audiolm-pytorch-personal_hacks/setup.py', '.'])
+    # remove the rest of the audiolm-pytorch directory
+    subprocess.run(['rm', '-rf', 'audiolm-pytorch'])
 
-# remove the rest of the audiolm-pytorch directory
-subprocess.run(['rm', '-rf', 'audiolm-pytorch'])
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Install a specific branch of the audiolm-pytorch library.")
+    parser.add_argument("branch_name", type=str, nargs="?", default="personal_hacks", help="The name of the Github branch to install.")
+    args = parser.parse_args()
+    branch_name = process_branch_name(args.branch_name)
+    main(branch_name)
