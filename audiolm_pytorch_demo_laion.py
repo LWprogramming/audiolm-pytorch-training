@@ -98,9 +98,9 @@ encodec = EncodecWrapper()
 
 # raise AssertionError("note to self, try larger batch size and grad update https://github.com/lucidrains/audiolm-pytorch/discussions/107#discussioncomment-5373414")
 wav2vec = HubertWithKmeans(
-    use_mert = True,
-    # checkpoint_path = f"{prefix}/{hubert_ckpt}",
-    checkpoint_path = None,
+    # use_mert = True,
+    checkpoint_path = f"{prefix}/{hubert_ckpt}",
+    # checkpoint_path = None,
     kmeans_path = f"{prefix}/{hubert_quantizer}"
 )
 
