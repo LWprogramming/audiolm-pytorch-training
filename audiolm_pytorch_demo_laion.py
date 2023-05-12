@@ -19,7 +19,8 @@ import datetime
 
 # define all dataset paths, checkpoints, etc
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
-dataset_folder = f"{prefix}/placeholder_dataset"
+# dataset_folder = f"{prefix}/placeholder_dataset"
+dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech/dev-clean"
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
@@ -66,7 +67,7 @@ def make_placeholder_dataset():
   save_wav(f"{dataset_folder}/example4.wav", get_sinewave(duration_ms=1003, freq=334.0))
   os.makedirs(f"{dataset_folder}/subdirectory")
   save_wav(f"{dataset_folder}/subdirectory/example.wav", get_sinewave(freq=330.0))
-make_placeholder_dataset()
+# make_placeholder_dataset()
 
 #######
 
