@@ -121,6 +121,7 @@ semantic_trainer = SemanticTransformerTrainer(
     save_results_every = 10000,
     save_model_every = 10000,
     results_folder = f"{prefix}/semantic_results",
+    force_clear_prev_results = False,
 )
 
 semantic_trainer.train()
@@ -147,6 +148,7 @@ coarse_trainer = CoarseTransformerTrainer(
     num_train_steps = 200001,
     save_results_every = 10000,
     save_model_every = 10000,
+    force_clear_prev_results = False,
 )
 
 coarse_trainer.train()
@@ -172,6 +174,7 @@ fine_trainer = FineTransformerTrainer(
     save_results_every = 10000,
     save_model_every = 10000,
     results_folder = f"{prefix}/fine_results",
+    force_clear_prev_results = False,
 )
 
 fine_trainer.train()
