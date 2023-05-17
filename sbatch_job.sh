@@ -8,7 +8,7 @@
 #SBATCH --output=../audiolm-pytorch-results/output-%A.log
 #SBATCH --error=../audiolm-pytorch-results/error-%A.log
 
-datetime=$(date +%Y%m%d-%H%M%S)
+# datetime=$(date +%Y%m%d-%H%M%S)
 
 echo "SLURM_JOB_ID: $SLURM_JOB_ID" >> ../audiolm-pytorch-results/output-$SLURM_JOB_ID.log
 
