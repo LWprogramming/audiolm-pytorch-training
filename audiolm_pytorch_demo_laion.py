@@ -157,6 +157,7 @@ semantic_trainer = SemanticTransformerTrainer(
 )
 
 semantic_ckpt = get_potential_checkpoint_path(args.semantic, "semantic", semantic_trainer)
+print(f"loading semantic checkpoint {semantic_ckpt}")
 if semantic_ckpt is not None:
     semantic_trainer.load(semantic_ckpt)
 
@@ -188,6 +189,7 @@ coarse_trainer = CoarseTransformerTrainer(
 )
 
 coarse_ckpt = get_potential_checkpoint_path(args.coarse, "coarse", coarse_trainer)
+print(f"loading coarse checkpoint {coarse_ckpt}")
 if coarse_ckpt is not None:
     coarse_trainer.load(coarse_ckpt)
 
@@ -218,6 +220,7 @@ fine_trainer = FineTransformerTrainer(
 )
 
 fine_ckpt = get_potential_checkpoint_path(args.fine, "fine", fine_trainer)
+print(f"loading fine checkpoint {fine_ckpt}")
 if fine_ckpt is not None:
     fine_trainer.load(fine_ckpt)
 
