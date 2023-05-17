@@ -3,6 +3,10 @@
 import os
 import shutil
 
+x = input("Are you SURE you want to wipe out previous results? Type \"absolutely yes\" if so")
+if not x == "absolutely yes":
+	raise AssertionError("nope")
+
 results_folder = "../audiolm-pytorch-results"
 if not os.path.isdir(results_folder):
 	raise AssertionError("didn't find results_folder, no results to clear out")
