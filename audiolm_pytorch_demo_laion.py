@@ -21,7 +21,7 @@ import re
 
 # Usage:
 # python audiolm_pytorch_demo_laion.py --semantic=/path/to/semantic --coarse=/path/to/coarse --fine=/path/to/fine
-# Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path
+# Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path.
 
 # define all dataset paths, checkpoints, etc
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
@@ -30,18 +30,31 @@ dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clea
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
-# Checkpoint loading. Expect format to be something like semantic.transformer.20000.pt
+# Checkpoint loading. Expect format to be something like /path/to/semantic.transformer.20000.pt
 parser = argparse.ArgumentParser()
-parser.add_argument('--semantic', type=str, help='Path to the semantic checkpoint', default=None)
-parser.add_argument('--coarse', type=str, help='Path to the coarse checkpoint', default=None)
-parser.add_argument('--fine', type=str, help='Path to the fine checkpoint', default=None)
+parser.add_argument('--semantic', type=str, help='Absolute path to the semantic checkpoint', default=None)
+parser.add_argument('--coarse', type=str, help='Absolute path to the coarse checkpoint', default=None)
+parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
 args = parser.parse_args()
-def load_checkpoint_and_update_steps(trainer, checkpoint_path):
-    if checkpoint_path is None or not isinstance(checkpoint_path, str):
-        raise AssertionError(f"checkpoint_path was {checkpoint_path}, not a string")
-    trainer.load(checkpoint_path)
-    num_steps_trained = int(re.search(r'\d+', checkpoint_path).group())
-    trainer.num_train_steps -= num_steps_trained
+def get_potential_checkpoint_path(arg, transformer_name, trainer):
+    """Determine checkpoint paths based on CLI arguments (overrides default, which searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
+    if arg:
+        return arg
+    assert transformer_name in {"semantic", "coarse", "fine"}
+
+    results_folder = f"{prefix}/{transformer_name}_results"
+    if not os.path.exists(results_folder):
+        return None
+
+    checkpoints = [f for f in os.listdir(results_folder) if f.endswith('.pt')]
+    steps = [int(re.findall(r'\d+', ckpt)[-1]) for ckpt in checkpoints]
+    max_step = max(steps, default=0)
+
+    if max_step % trainer.save_model_every != 0 or max_step > trainer.num_train_steps:
+        raise ValueError("Invalid checkpoint step")
+
+    return f"{results_folder}/{transformer_name}.transformer.{max_step}.pt" if max_step > 0 else None
+
 
 # Placeholder data generation
 def get_sinewave(freq=440.0, duration_ms=200, volume=1.0, sample_rate=24000.0):
@@ -143,8 +156,9 @@ semantic_trainer = SemanticTransformerTrainer(
     force_clear_prev_results = False,
 )
 
-if args.semantic:
-    load_checkpoint_and_update_steps(semantic_trainer, args.semantic)
+semantic_ckpt = get_potential_checkpoint_path(args.semantic, "semantic", semantic_trainer)
+if semantic_ckpt is not None:
+    semantic_trainer.load(semantic_ckpt)
 
 semantic_trainer.train()
 
@@ -173,8 +187,9 @@ coarse_trainer = CoarseTransformerTrainer(
     force_clear_prev_results = False,
 )
 
-if args.coarse:
-    load_checkpoint_and_update_steps(coarse_trainer, args.coarse)
+coarse_ckpt = get_potential_checkpoint_path(args.coarse, "coarse", coarse_trainer)
+if coarse_ckpt is not None:
+    coarse_trainer.load(coarse_ckpt)
 
 coarse_trainer.train()
 
@@ -202,8 +217,9 @@ fine_trainer = FineTransformerTrainer(
     force_clear_prev_results = False,
 )
 
-if args.fine:
-    load_checkpoint_and_update_steps(fine_trainer, args.fine)
+fine_ckpt = get_potential_checkpoint_path(args.fine, "fine", fine_trainer)
+if fine_ckpt is not None:
+    fine_trainer.load(fine_ckpt)
 
 fine_trainer.train()
 
