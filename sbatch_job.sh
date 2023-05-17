@@ -8,4 +8,7 @@
 #SBATCH --output=../audiolm-pytorch-results/output.log
 #SBATCH --error=../audiolm-pytorch-results/error.log
 
-python -u audiolm_pytorch_demo_laion.py
+python -u audiolm_pytorch_demo_laion.py "$@"
+
+# Usage: noting that checkpoint flags are optional
+# sbatch sbatch_job.sh --semantic /path/to/semantic --coarse /path/to/coarse --fine /path/to/fine

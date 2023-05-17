@@ -13,9 +13,15 @@ import torch
 import torchaudio
 from torch.profiler import profile, record_function, ProfilerActivity
 import datetime
+import argparse
+import re
 # import boto3
 # import datetime
 # from botocore.errorfactory import ClientError
+
+# Usage:
+# python audiolm_pytorch_demo_laion.py --semantic=/path/to/semantic --coarse=/path/to/coarse --fine=/path/to/fine
+# Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path
 
 # define all dataset paths, checkpoints, etc
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
@@ -23,6 +29,19 @@ prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech/dev-clean"
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
+
+# Checkpoint loading. Expect format to be something like semantic.transformer.20000.pt
+parser = argparse.ArgumentParser()
+parser.add_argument('--semantic', type=str, help='Path to the semantic checkpoint', default=None)
+parser.add_argument('--coarse', type=str, help='Path to the coarse checkpoint', default=None)
+parser.add_argument('--fine', type=str, help='Path to the fine checkpoint', default=None)
+args = parser.parse_args()
+def load_checkpoint_and_update_steps(trainer, checkpoint_path):
+    if checkpoint_path is None or not isinstance(checkpoint_path, str):
+        raise AssertionError(f"checkpoint_path was {checkpoint_path}, not a string")
+    trainer.load(checkpoint_path)
+    num_steps_trained = int(re.search(r'\d+', checkpoint_path).group())
+    trainer.num_train_steps -= num_steps_trained
 
 # Placeholder data generation
 def get_sinewave(freq=440.0, duration_ms=200, volume=1.0, sample_rate=24000.0):
@@ -124,6 +143,9 @@ semantic_trainer = SemanticTransformerTrainer(
     force_clear_prev_results = False,
 )
 
+if args.semantic:
+    load_checkpoint_and_update_steps(semantic_trainer, args.semantic)
+
 semantic_trainer.train()
 
 ################
@@ -151,6 +173,9 @@ coarse_trainer = CoarseTransformerTrainer(
     force_clear_prev_results = False,
 )
 
+if args.coarse:
+    load_checkpoint_and_update_steps(coarse_trainer, args.coarse)
+
 coarse_trainer.train()
 
 ################
@@ -176,6 +201,9 @@ fine_trainer = FineTransformerTrainer(
     results_folder = f"{prefix}/fine_results",
     force_clear_prev_results = False,
 )
+
+if args.fine:
+    load_checkpoint_and_update_steps(fine_trainer, args.fine)
 
 fine_trainer.train()
 
