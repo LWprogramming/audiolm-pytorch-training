@@ -36,6 +36,7 @@ parser.add_argument('--semantic', type=str, help='Absolute path to the semantic 
 parser.add_argument('--coarse', type=str, help='Absolute path to the coarse checkpoint', default=None)
 parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
 args = parser.parse_args()
+print("parsed args")
 def get_potential_checkpoint_path(arg, transformer_name, trainer):
     """Determine checkpoint paths based on CLI arguments (overrides default, which searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
     if arg:
