@@ -5,6 +5,7 @@
 #SBATCH --cpus-per-gpu=1
 #SBATCH --job-name=audiolm-e2e
 #SBATCH --comment=laion
+#SBATCH --open-mode=append
 #SBATCH --output=../audiolm-pytorch-results/output-%A.log
 #SBATCH --error=../audiolm-pytorch-results/error-%A.log
 
