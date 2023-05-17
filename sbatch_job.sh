@@ -5,10 +5,11 @@
 #SBATCH --cpus-per-gpu=1
 #SBATCH --job-name=audiolm-e2e
 #SBATCH --comment=laion
-#SBATCH --output=../audiolm-pytorch-results/output.log
-#SBATCH --error=../audiolm-pytorch-results/error.log
+#SBATCH --output=../audiolm-pytorch-results/output-%A.log
+#SBATCH --error=../audiolm-pytorch-results/error-%A.log
+
+datetime=$(date +%Y%m%d-%H%M%S)
+
+echo "SLURM_JOB_ID: $SLURM_JOB_ID" >> ../audiolm-pytorch-results/output-$SLURM_JOB_ID.log
 
 python -u audiolm_pytorch_demo_laion.py "$@"
-
-# Usage: noting that checkpoint flags are optional
-# sbatch sbatch_job.sh --semantic /path/to/semantic --coarse /path/to/coarse --fine /path/to/fine
