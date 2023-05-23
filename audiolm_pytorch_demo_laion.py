@@ -15,14 +15,25 @@ from torch.profiler import profile, record_function, ProfilerActivity
 import datetime
 import argparse
 import re
+
+import random
+import numpy as np
+from torch.utils.data import DataLoader
+
 # import boto3
 # import datetime
 # from botocore.errorfactory import ClientError
 
+# Eliminate ALL non-determinism
+torch.manual_seed(42)
+random.seed(42)
+np.random.seed(42)
+torch.backends.cudnn.benchmark = False
+torch.use_deterministic_algorithms(True)
+
 # Usage:
 # python audiolm_pytorch_demo_laion.py --semantic=/path/to/semantic --coarse=/path/to/coarse --fine=/path/to/fine
 # Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path.
-
 # define all dataset paths, checkpoints, etc
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 # dataset_folder = f"{prefix}/placeholder_dataset"
