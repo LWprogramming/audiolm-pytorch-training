@@ -8,6 +8,7 @@
 #SBATCH --open-mode=append
 #SBATCH --output=../audiolm-pytorch-results/output-%A.log
 #SBATCH --error=../audiolm-pytorch-results/error-%A.log
+#SBATCH --requeue
 
 # datetime=$(date +%Y%m%d-%H%M%S)
 
