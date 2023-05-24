@@ -47,7 +47,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--semantic', type=str, help='Absolute path to the semantic checkpoint', default=None)
 parser.add_argument('--coarse', type=str, help='Absolute path to the coarse checkpoint', default=None)
 parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
+parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for creating results folders', required=True)
 args = parser.parse_args()
+results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
 def get_potential_checkpoint_path(arg, transformer_name, trainer):
     """Determine checkpoint paths based on CLI arguments (overrides default, which searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
@@ -55,7 +57,7 @@ def get_potential_checkpoint_path(arg, transformer_name, trainer):
         return arg
     assert transformer_name in {"semantic", "coarse", "fine"}
 
-    results_folder = f"{prefix}/{transformer_name}_results"
+    results_folder = f"{prefix}/{transformer_name}_results_{results_folder_suffix}"
     if not os.path.exists(results_folder):
         return None
 
@@ -130,7 +132,7 @@ def make_placeholder_dataset():
 #     batch_size = 4,
 #     grad_accum_every = 8, # effective batch size of batch_size * grad_accum_every = 32
 #     data_max_length_seconds = 2,  # train on 2 second audio
-#     results_folder = f"{prefix}/soundstream_results",
+#     results_folder = f"{prefix}/soundstream_results_{results_folder_suffix}",
 #     save_results_every = 4,
 #     save_model_every = 4,
 #     num_train_steps = 9
@@ -165,7 +167,7 @@ semantic_trainer = SemanticTransformerTrainer(
     num_train_steps = 5,
     save_results_every = 2,
     save_model_every = 2,
-    results_folder = f"{prefix}/semantic_results",
+    results_folder = f"{prefix}/semantic_results_{results_folder_suffix}",
     force_clear_prev_results = False,
 )
 
@@ -194,7 +196,7 @@ coarse_trainer = CoarseTransformerTrainer(
     batch_size = 32,
     grad_accum_every = 16,
     data_max_length = 320 * 32,
-    results_folder = f"{prefix}/coarse_results",
+    results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
     num_train_steps = 5,
     save_results_every = 2,
     save_model_every = 2,
@@ -228,7 +230,7 @@ fine_trainer = FineTransformerTrainer(
     num_train_steps = 5,
     save_results_every = 2,
     save_model_every = 2,
-    results_folder = f"{prefix}/fine_results",
+    results_folder = f"{prefix}/fine_results_{results_folder_suffix}",
     force_clear_prev_results = False,
 )
 

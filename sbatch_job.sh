@@ -14,4 +14,4 @@
 
 echo "SLURM_JOB_ID: $SLURM_JOB_ID" >> ../audiolm-pytorch-results/output-$SLURM_JOB_ID.log
 
-python -u audiolm_pytorch_demo_laion.py "$@"
+python -u audiolm_pytorch_demo_laion.py "$@" --slurm_job_id $SLURM_JOB_ID
