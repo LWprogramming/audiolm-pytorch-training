@@ -163,8 +163,8 @@ semantic_trainer = SemanticTransformerTrainer(
     grad_accum_every = 16,
     data_max_length = 320 * 32,
     num_train_steps = 5,
-    save_results_every = 10000,
-    save_model_every = 10000,
+    save_results_every = 2,
+    save_model_every = 2,
     results_folder = f"{prefix}/semantic_results",
     force_clear_prev_results = False,
 )
@@ -196,8 +196,8 @@ coarse_trainer = CoarseTransformerTrainer(
     data_max_length = 320 * 32,
     results_folder = f"{prefix}/coarse_results",
     num_train_steps = 5,
-    save_results_every = 10000,
-    save_model_every = 10000,
+    save_results_every = 2,
+    save_model_every = 2,
     force_clear_prev_results = False,
 )
 
@@ -226,8 +226,8 @@ fine_trainer = FineTransformerTrainer(
     grad_accum_every = 16,
     data_max_length = 320 * 32,
     num_train_steps = 5,
-    save_results_every = 10000,
-    save_model_every = 10000,
+    save_results_every = 2,
+    save_model_every = 2,
     results_folder = f"{prefix}/fine_results",
     force_clear_prev_results = False,
 )
