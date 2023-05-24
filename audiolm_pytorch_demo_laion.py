@@ -38,7 +38,8 @@ torch.backends.cudnn.benchmark = False
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 # dataset_folder = f"{prefix}/placeholder_dataset"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech/dev-clean"
-dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_samples"
+# dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_samples"
+dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample"
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
