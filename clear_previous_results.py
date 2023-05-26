@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import re
 
 x = input("Are you SURE you want to wipe out previous results? Type \"absolutely yes\" if so")
 if not x == "absolutely yes":
