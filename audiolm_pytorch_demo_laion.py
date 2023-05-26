@@ -28,7 +28,7 @@ from torch.utils.data import DataLoader
 torch.manual_seed(42)
 random.seed(42)
 np.random.seed(42)
-torch.backends.cudnn.benchmark = False
+# torch.backends.cudnn.benchmark = False
 # torch.use_deterministic_algorithms(True) # doesn't work due to https://discuss.pytorch.org/t/pytorchs-non-deterministic-cross-entropy-loss-and-the-problem-of-reproducibility/172180/10
 
 # Usage:
