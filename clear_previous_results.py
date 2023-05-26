@@ -25,6 +25,7 @@ for item in os.listdir(results_folder):
         if item.startswith(prefix):
             if os.path.isdir(item_path):
                 shutil.rmtree(item_path)
-            elif os.path.isfile(item_path):
-                os.remove(item_path)
             break
+    if re.match(r'(output|error)-\d+\.log', item):
+        if os.path.isfile(item_path):
+            os.remove(item_path)
