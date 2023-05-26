@@ -31,6 +31,8 @@ np.random.seed(42)
 torch.backends.cudnn.benchmark = False
 # torch.use_deterministic_algorithms(True) # doesn't work due to https://discuss.pytorch.org/t/pytorchs-non-deterministic-cross-entropy-loss-and-the-problem-of-reproducibility/172180/10
 
+raise AssertionError("remember to fix the batch size and grad update every fields for all transformers if you're changing the dataset!")
+
 # Usage:
 # python audiolm_pytorch_demo_laion.py --semantic=/path/to/semantic --coarse=/path/to/coarse --fine=/path/to/fine
 # Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path.
