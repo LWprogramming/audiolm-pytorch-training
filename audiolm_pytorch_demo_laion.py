@@ -256,7 +256,7 @@ audiolm = AudioLM(
 )
 
 generated_wav = audiolm(batch_size = 1)
-output_path = f"{prefix}/out.wav"
+output_path = f"{prefix}/out_{args.slurm_job_id}.wav"
 sample_rate = 24000
 torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
