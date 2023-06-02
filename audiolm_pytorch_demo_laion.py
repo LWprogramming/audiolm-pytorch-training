@@ -54,6 +54,7 @@ parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for cre
 args = parser.parse_args()
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
+print(f"training on audiolm_pytorch version {audiolm_pytorch.version.__version__}")
 def get_potential_checkpoint_path(arg, transformer_name, trainer):
     """Determine checkpoint paths based on CLI arguments (overrides default, which searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
     if arg:
