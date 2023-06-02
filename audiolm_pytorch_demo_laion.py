@@ -31,6 +31,12 @@ np.random.seed(42)
 torch.backends.cudnn.benchmark = False
 # torch.use_deterministic_algorithms(True) # doesn't work due to https://discuss.pytorch.org/t/pytorchs-non-deterministic-cross-entropy-loss-and-the-problem-of-reproducibility/172180/10
 
+# For logging
+print(f"PyTorch seed: {torch.initial_seed()}")
+print(f"NumPy seed: {np.random.get_state()[1][0]}")
+print(f"Random seed: {random.getstate()[1][0]}")
+torch.backends.cudnn.benchmark = False
+
 raise AssertionError("remember to fix the batch size and grad update every fields for all transformers if you're changing the dataset!")
 
 # Usage:
