@@ -34,7 +34,7 @@ torch.backends.cudnn.benchmark = False
 # For logging
 print(f"PyTorch seed: {torch.initial_seed()}")
 print(f"NumPy seed: {np.random.get_state()[1][0]}")
-print(f"Random seed: {random.getstate()[1][0]}")
+# print(f"Random seed: {random.getstate()[1][0]}") # never mind, random seed is not accessible in python
 torch.backends.cudnn.benchmark = False
 
 raise AssertionError("remember to fix the batch size and grad update every fields for all transformers if you're changing the dataset!")
