@@ -24,5 +24,5 @@ subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/erro
 # Transfer checkpoints
 for folder in ["semantic_results", "coarse_results", "fine_results"]:
     folder_path = f"/fsx/itsleonwu/audiolm-pytorch-results/{folder}_{job_id}"
-    for file in os.listdir(folder_path):
-        subprocess.run(["aws", "s3", "cp", f"{folder_path}/{file}", f"s3://itsleonwu-paperspace/{s3_folder}/{folder}/{file}", "--profile", "laion-stability-my-s3-bucket"])
+    max_checkpoint = max(os.listdir(folder_path), key=lambda x: int(re.search(r"(\d+)", x).group(1)))
+    subprocess.run(["aws", "s3", "cp", f"{folder_path}/{max_checkpoint}", f"s3://itsleonwu-paperspace/{s3_folder}/{folder}/{max_checkpoint}", "--profile", "laion-stability-my-s3-bucket"])
