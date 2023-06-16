@@ -134,4 +134,4 @@ dmypy.json
 # custom-patched libs
 audiolm_pytorch
 audiolm-pytorch-personal-hacks.zip
-out.wav
+*.wav
