@@ -26,7 +26,7 @@ subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/sba
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/audiolm_pytorch_demo_laion.py", f"s3://itsleonwu-paperspace/{s3_folder}/audiolm_pytorch_demo_laion.py", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/output-{job_id}.log", f"s3://itsleonwu-paperspace/{s3_folder}/output-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/error-{job_id}.log", f"s3://itsleonwu-paperspace/{s3_folder}/error-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
-subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/out_{job_id}.wav", f"s3://itsleonwu-paperspace/{s3_folder}/error-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
+subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/out_{job_id}.wav", f"s3://itsleonwu-paperspace/{s3_folder}/out_{job_id}.wav", "--profile", "laion-stability-my-s3-bucket"])
 
 
 # Transfer checkpoints
