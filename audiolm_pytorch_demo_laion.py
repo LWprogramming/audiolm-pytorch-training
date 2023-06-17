@@ -47,12 +47,13 @@ raise AssertionError("remember to fix the batch size and grad update every field
 # define all dataset paths, checkpoints, etc
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 # dataset_folder = f"{prefix}/placeholder_dataset"
-# dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech/dev-clean"
+dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech/dev-clean"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_samples"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample"
 # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
 dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
-hubert_ckpt = f'hubert/hubert_base_ls960.pt'get_potential_checkpoint_pathget_potential_checkpoint_path
+# dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
+hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
 # Checkpoint loading. Expect format to be something like /path/to/semantic.transformer.20000.pt
@@ -178,8 +179,8 @@ semantic_trainer = SemanticTransformerTrainer(
     transformer = semantic_transformer,
     wav2vec = wav2vec,
     folder = dataset_folder,
-    batch_size = 1,
-    grad_accum_every = 1,
+    batch_size = 8,
+    grad_accum_every = 16,
     data_max_length = 24000,
     num_train_steps = num_train_steps,
     save_results_every = save_every,
@@ -210,8 +211,8 @@ coarse_trainer = CoarseTransformerTrainer(
     codec = codec,
     wav2vec = wav2vec,
     folder = dataset_folder,
-    batch_size = 1,
-    grad_accum_every = 1,
+    batch_size = 8,
+    grad_accum_every = 16,
     data_max_length = 24000,
     results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
     num_train_steps = num_train_steps,
@@ -241,8 +242,8 @@ fine_trainer = FineTransformerTrainer(
     transformer = fine_transformer,
     codec = codec,
     folder = dataset_folder,
-    batch_size = 1,
-    grad_accum_every = 1,
+    batch_size = 8,
+    grad_accum_every = 16,
     data_max_length = 24000,
     num_train_steps = num_train_steps,
     save_results_every = save_every,
