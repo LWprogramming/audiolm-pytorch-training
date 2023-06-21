@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=1
-#SBATCH --job-name=audiolm-e2e-openslr-dev-clean
+#SBATCH --job-name=audiolm-e2e-cocochorales-intentional-overfit
 #SBATCH --comment=laion
 #SBATCH --open-mode=append
 #SBATCH --output=../audiolm-pytorch-results/output-%A.log
