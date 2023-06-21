@@ -52,7 +52,7 @@ prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample"
 # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
 dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
-hubert_ckpt = f'hubert/hubert_base_ls960.pt'
+hubert_ckpt = f'hubert/hubert_base_ls960.pt'get_potential_checkpoint_pathget_potential_checkpoint_path
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
 # Checkpoint loading. Expect format to be something like /path/to/semantic.transformer.20000.pt
@@ -165,6 +165,9 @@ wav2vec = HubertWithKmeans(
     kmeans_path = f"{prefix}/{hubert_quantizer}"
 )
 
+num_train_steps = 5001
+save_every = 1000
+
 semantic_transformer = SemanticTransformer(
     num_semantic_tokens = wav2vec.codebook_size,
     dim = 1024,
@@ -178,9 +181,9 @@ semantic_trainer = SemanticTransformerTrainer(
     batch_size = 1,
     grad_accum_every = 1,
     data_max_length = 24000,
-    num_train_steps = 5001,
-    save_results_every = 1000,
-    save_model_every = 1000,
+    num_train_steps = num_train_steps,
+    save_results_every = save_every,
+    save_model_every = save_every,
     results_folder = f"{prefix}/semantic_results_{results_folder_suffix}",
     force_clear_prev_results = False,
 )
@@ -190,7 +193,7 @@ print(f"loading semantic checkpoint {semantic_ckpt}")
 if semantic_ckpt is not None:
     semantic_trainer.load(semantic_ckpt)
 
-semantic_trainer.train()
+# semantic_trainer.train()
 
 ################
 
@@ -211,9 +214,9 @@ coarse_trainer = CoarseTransformerTrainer(
     grad_accum_every = 1,
     data_max_length = 24000,
     results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
-    num_train_steps = 5001,
-    save_results_every = 1000,
-    save_model_every = 1000,
+    num_train_steps = num_train_steps,
+    save_results_every = save_every,
+    save_model_every = save_every,
     force_clear_prev_results = False,
 )
 
@@ -222,7 +225,7 @@ print(f"loading coarse checkpoint {coarse_ckpt}")
 if coarse_ckpt is not None:
     coarse_trainer.load(coarse_ckpt)
 
-coarse_trainer.train()
+# coarse_trainer.train()
 
 ################
 
@@ -241,9 +244,9 @@ fine_trainer = FineTransformerTrainer(
     batch_size = 1,
     grad_accum_every = 1,
     data_max_length = 24000,
-    num_train_steps = 5001,
-    save_results_every = 1000,
-    save_model_every = 1000,
+    num_train_steps = num_train_steps,
+    save_results_every = save_every,
+    save_model_every = save_every,
     results_folder = f"{prefix}/fine_results_{results_folder_suffix}",
     force_clear_prev_results = False,
 )
@@ -253,23 +256,32 @@ print(f"loading fine checkpoint {fine_ckpt}")
 if fine_ckpt is not None:
     fine_trainer.load(fine_ckpt)
 
-fine_trainer.train()
+# fine_trainer.train()
 
 ################
-# Everything together
+def train_models(steps_to_train):
+    for _ in range(steps_to_train):
+        semantic_trainer.train_step()
+        coarse_trainer.train_step()
+        fine_trainer.train_step()
 
-audiolm = AudioLM(
-    wav2vec = wav2vec,
-    codec = codec,
-    semantic_transformer = semantic_transformer,
-    coarse_transformer = coarse_transformer,
-    fine_transformer = fine_transformer
-)
+for step in range(0, num_train_steps, save_every):
+    train_models(save_every)
 
-generated_wav = audiolm(batch_size = 1)
-output_path = f"{prefix}/out_{args.slurm_job_id}.wav"
-sample_rate = 24000
-torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
+    # Generate output and save
+    audiolm = AudioLM(
+        wav2vec = wav2vec,
+        codec = codec,
+        semantic_transformer = semantic_transformer,
+        coarse_transformer = coarse_transformer,
+        fine_transformer = fine_transformer
+    )
+
+    generated_wav = audiolm(batch_size = 1)
+    output_path = f"{prefix}/out_{args.slurm_job_id}_{step}.wav"
+    sample_rate = 24000
+    torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
+
 
 # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, profile_memory=True, use_cuda=True) as prof:
 #     with record_function("model_inference"):
