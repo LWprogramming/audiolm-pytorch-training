@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=g40
+#SBATCH --partition=g40x
 #SBATCH --nodes=1
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=1

@@ -51,7 +51,7 @@ prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_samples"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample"
 # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
-dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
+dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
 hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
