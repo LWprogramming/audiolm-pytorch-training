@@ -62,8 +62,8 @@ parser.add_argument('--coarse', type=str, help='Absolute path to the coarse chec
 parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
 parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for creating results folders', required=True)
 
-parser.add_argument('--no_parallel_training', dest='parallel_training', help="disable parallel training, forcing transformers to train in sequence." action='store_false')
-parser.add_argument('--parallel_training', dest='parallel_training', help="enable parallel training, forcing transformers to train a little bit before handing off to the next transformer. Good for seeing how results progressively get better." action='store_true')
+parser.add_argument('--no_parallel_training', dest='parallel_training', help="disable parallel training, forcing transformers to train in sequence.", action='store_false')
+parser.add_argument('--parallel_training', dest='parallel_training', help="enable parallel training, forcing transformers to train a little bit before handing off to the next transformer. Good for seeing how results progressively get better.", action='store_true')
 parser.set_defaults(parallel_training=False)
 
 args = parser.parse_args()
