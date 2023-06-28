@@ -6,8 +6,9 @@ This repository contains my scripts to train AudioLM models, using the [audiolm-
 
 ```bash
 # Create necessary directories
-mkdir /fsx/itsleonwu
-cd /fsx/itsleonwu
+export folder_name=itsleonwu # rename this for your own purposes
+mkdir /fsx/$folder_name 
+cd /fsx/$folder_name 
 mkdir audiolm-pytorch-results
 mkdir audiolm-pytorch-datasets
 
@@ -25,7 +26,7 @@ python hubert_ckpt_download.py
 # Run the use_patched_audiolm.py script
 python use_patched_audiolm.py personal_hacks
 
-pip install tensorboardX # for some reason not covered separately
+pip install tensorboardX # for some reason not covered in the previous pip install?? installing separately
 
 # Download the dataset
 cd ../audiolm-pytorch-datasets
