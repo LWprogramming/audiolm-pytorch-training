@@ -47,7 +47,7 @@ raise AssertionError("remember to fix the batch size and grad update every field
 # define all dataset paths, checkpoints, etc
 prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
 # dataset_folder = f"{prefix}/placeholder_dataset"
-dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech/dev-clean"
+dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/openslr-slr12-dev-clean/LibriSpeech-dev-clean/dev-clean"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_samples"
 # dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample"
 # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
