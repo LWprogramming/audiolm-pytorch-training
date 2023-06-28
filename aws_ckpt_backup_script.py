@@ -34,7 +34,8 @@ subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/sba
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/audiolm_pytorch_demo_laion.py", f"s3://{bucket_prefix}/{s3_folder}/audiolm_pytorch_demo_laion.py", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/output-{job_id}.log", f"s3://{bucket_prefix}/{s3_folder}/output-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/error-{job_id}.log", f"s3://{bucket_prefix}/{s3_folder}/error-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
-subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/out_{job_id}.wav", f"s3://{bucket_prefix}/{s3_folder}/out_{job_id}.wav", "--profile", "laion-stability-my-s3-bucket"])
+output_filename = f"out_job_id_{job_id}_step_{step}.wav" # should match what is saved in audiolm_pytorch_demo_laion.py
+subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/{output_filename}", f"s3://{bucket_prefix}/{s3_folder}/{output_filename}", "--profile", "laion-stability-my-s3-bucket"])
 
 
 # Transfer checkpoints
