@@ -66,7 +66,6 @@ parser.add_argument('--no_parallel_training', dest='parallel_training', help="di
 parser.add_argument('--parallel_training', dest='parallel_training', help="enable parallel training, forcing transformers to train a little bit before handing off to the next transformer. Good for seeing how results progressively get better." action='store_true')
 parser.set_defaults(parallel_training=False)
 
-
 args = parser.parse_args()
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
@@ -184,8 +183,8 @@ semantic_trainer = SemanticTransformerTrainer(
     transformer = semantic_transformer,
     wav2vec = wav2vec,
     folder = dataset_folder,
-    batch_size = 8,
-    grad_accum_every = 16,
+    batch_size = 1,
+    grad_accum_every = 1,
     data_max_length = 24000,
     num_train_steps = num_train_steps,
     save_results_every = save_every,
@@ -216,8 +215,8 @@ coarse_trainer = CoarseTransformerTrainer(
     codec = codec,
     wav2vec = wav2vec,
     folder = dataset_folder,
-    batch_size = 8,
-    grad_accum_every = 16,
+    batch_size = 1,
+    grad_accum_every = 1,
     data_max_length = 24000,
     results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
     num_train_steps = num_train_steps,
@@ -247,8 +246,8 @@ fine_trainer = FineTransformerTrainer(
     transformer = fine_transformer,
     codec = codec,
     folder = dataset_folder,
-    batch_size = 8,
-    grad_accum_every = 16,
+    batch_size = 1,
+    grad_accum_every = 1,
     data_max_length = 24000,
     num_train_steps = num_train_steps,
     save_results_every = save_every,
