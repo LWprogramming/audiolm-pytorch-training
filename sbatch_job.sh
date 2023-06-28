@@ -19,3 +19,7 @@ echo "SLURM_JOB_ID: $SLURM_JOB_ID" >> ../audiolm-pytorch-results/output-$SLURM_J
 # export CUDA_LAUNCH_BLOCKING=1
 source venv/bin/activate # in case this hasn't already been done
 python -u audiolm_pytorch_demo_laion.py "$@" --slurm_job_id $SLURM_JOB_ID
+
+# echo "Model training completed. Now saving results to s3..."
+# default to saving to LAION s3 bucket
+# python aws_ckpt_backup_script.py $SLURM_JOB_ID
