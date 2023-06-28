@@ -13,12 +13,13 @@
 # datetime=$(date +%Y%m%d-%H%M%S)
 
 echo "SLURM_JOB_ID: $SLURM_JOB_ID" >> ../audiolm-pytorch-results/output-$SLURM_JOB_ID.log
+source venv/bin/activate # in case this hasn't already been done
 
 # export CUBLAS_WORKSPACE_CONFIG=:4096:8 # increase memory footprint by about 24 MiB but gives deterministic results. See https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility
-
 # export CUDA_LAUNCH_BLOCKING=1
-source venv/bin/activate # in case this hasn't already been done
-python -u audiolm_pytorch_demo_laion.py "$@" --slurm_job_id $SLURM_JOB_ID --parallel_training
+
+RUN_MODE=$1 # required, see audiolm_pytorch_demo_laion.py
+python -u audiolm_pytorch_demo_laion.py "$@" --slurm_job_id $SLURM_JOB_ID --run_mode $RUN_MODE --parallel_training
 
 # echo "Model training completed. Now saving results to s3..."
 # default to saving to LAION s3 bucket

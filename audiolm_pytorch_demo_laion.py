@@ -38,37 +38,57 @@ print(f"NumPy seed: {np.random.get_state()[1][0]}")
 # print(f"Random seed: {random.getstate()[1][0]}") # never mind, random seed is not accessible in python
 torch.backends.cudnn.benchmark = False
 
-# Default: try batch size 8, grad accum every 16 if not intentionally trying to overfit on a very small data sample.
-raise AssertionError("remember to fix the batch size and grad update every fields for all transformers if you're changing the dataset!")
-
-# Usage:
-# python audiolm_pytorch_demo_laion.py --semantic=/path/to/semantic --coarse=/path/to/coarse --fine=/path/to/fine
-# Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path.
-# define all dataset paths, checkpoints, etc
-prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
-# dataset_folder = f"{prefix}/placeholder_dataset"
-dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/LibriSpeech-dev-clean/dev-clean"
-# dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_samples"
-# dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/two_identical_copies_of_cocochorales_single_sample"
-# resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
-# dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
-hubert_ckpt = f'hubert/hubert_base_ls960.pt'
-hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
-
 # Checkpoint loading. Expect format to be something like /path/to/semantic.transformer.20000.pt
 parser = argparse.ArgumentParser()
 parser.add_argument('--semantic', type=str, help='Absolute path to the semantic checkpoint', default=None)
 parser.add_argument('--coarse', type=str, help='Absolute path to the coarse checkpoint', default=None)
 parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
 parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for creating results folders', required=True)
-
+# parallel vs non-parallel training
 parser.add_argument('--no_parallel_training', dest='parallel_training', help="disable parallel training, forcing transformers to train in sequence.", action='store_false')
 parser.add_argument('--parallel_training', dest='parallel_training', help="enable parallel training, forcing transformers to train a little bit before handing off to the next transformer. Good for seeing how results progressively get better.", action='store_true')
+parser.add_argument('--run_mode',
+                    type=str,
+                    help='run configuration (pick from choices). Sets dataset_folder, num_train_steps, save_every, batch_size, and grad_accum_every',
+                    choices=["openslr", "cocochorales_overfit_1_second", "cocochorales_overfit"],
+                    default=None,
+                    required=True)
 parser.set_defaults(parallel_training=False)
-
 args = parser.parse_args()
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
+
+if args.run_mode == "openslr":
+    dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/LibriSpeech-dev-clean/dev-clean"
+    num_train_steps = 1000001
+    save_every = 100000
+    batch_size = 8
+    grad_accum_every = 16
+elif args.run_mode == "cocochorales_overfit_1_second":
+    # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
+    dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
+    num_train_steps = 5001
+    save_every = 1000
+    batch_size = 1
+    grad_accum_every = 1
+elif args.run_mode == "cocochorales_overfit":
+    # try a single un-trimmed data point direct from cocochorales, default at 16kHz
+    dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_single_sample_unprocessed"
+    num_train_steps = 5001
+    save_every = 1000
+    batch_size = 1
+    grad_accum_every = 1
+else:
+    raise AssertionError("impossible to be here, bug")
+
+# Usage:
+# python audiolm_pytorch_demo_laion.py --semantic=/path/to/semantic --coarse=/path/to/coarse --fine=/path/to/fine
+# Checkpoint flags are optional of course. You need to give a full path, no guarantees if it's not a full path.
+# define all dataset paths, checkpoints, etc
+prefix = "/fsx/itsleonwu/audiolm-pytorch-results"
+hubert_ckpt = f'hubert/hubert_base_ls960.pt'
+hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
+
 print(f"training on audiolm_pytorch version {audiolm_pytorch.version.__version__}")
 def get_potential_checkpoint_path(arg, transformer_name, trainer):
     """Determine checkpoint paths based on CLI arguments (overrides default, which searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
