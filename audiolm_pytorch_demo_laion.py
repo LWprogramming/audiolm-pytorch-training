@@ -170,8 +170,8 @@ wav2vec = HubertWithKmeans(
     kmeans_path = f"{prefix}/{hubert_quantizer}"
 )
 
-num_train_steps = 5001
-save_every = 1000
+num_train_steps = 1000001
+save_every = 100000
 
 semantic_transformer = SemanticTransformer(
     num_semantic_tokens = wav2vec.codebook_size,
