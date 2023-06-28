@@ -40,9 +40,6 @@ torch.backends.cudnn.benchmark = False
 
 # Checkpoint loading. Expect format to be something like /path/to/semantic.transformer.20000.pt
 parser = argparse.ArgumentParser()
-parser.add_argument('--semantic', type=str, help='Absolute path to the semantic checkpoint', default=None)
-parser.add_argument('--coarse', type=str, help='Absolute path to the coarse checkpoint', default=None)
-parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
 parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for creating results folders', required=True)
 # parallel vs non-parallel training
 parser.add_argument('--no_parallel_training', dest='parallel_training', help="disable parallel training, forcing transformers to train in sequence.", action='store_false')
@@ -90,10 +87,8 @@ hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
 print(f"training on audiolm_pytorch version {audiolm_pytorch.version.__version__}")
-def get_potential_checkpoint_path(arg, transformer_name, trainer):
-    """Determine checkpoint paths based on CLI arguments (overrides default, which searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
-    if arg:
-        return arg
+def get_potential_checkpoint_path(transformer_name, trainer, prefix, results_folder_suffix):
+    """Determine checkpoint paths based on slurm_job_id CLI argument. searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
     assert transformer_name in {"semantic", "coarse", "fine"}
 
     results_folder = f"{prefix}/{transformer_name}_results_{results_folder_suffix}"
@@ -213,7 +208,7 @@ semantic_trainer = SemanticTransformerTrainer(
     force_clear_prev_results = False,
 )
 
-semantic_ckpt = get_potential_checkpoint_path(args.semantic, "semantic", semantic_trainer)
+semantic_ckpt = get_potential_checkpoint_path("semantic", semantic_trainer, prefix, results_folder_suffix)
 print(f"loading semantic checkpoint {semantic_ckpt}")
 if semantic_ckpt is not None:
     semantic_trainer.load(semantic_ckpt)
@@ -245,7 +240,7 @@ coarse_trainer = CoarseTransformerTrainer(
     force_clear_prev_results = False,
 )
 
-coarse_ckpt = get_potential_checkpoint_path(args.coarse, "coarse", coarse_trainer)
+coarse_ckpt = get_potential_checkpoint_path("coarse", coarse_trainer, prefix, results_folder_suffix)
 print(f"loading coarse checkpoint {coarse_ckpt}")
 if coarse_ckpt is not None:
     coarse_trainer.load(coarse_ckpt)
@@ -276,7 +271,7 @@ fine_trainer = FineTransformerTrainer(
     force_clear_prev_results = False,
 )
 
-fine_ckpt = get_potential_checkpoint_path(args.fine, "fine", fine_trainer)
+fine_ckpt = get_potential_checkpoint_path("fine", fine_trainer, prefix, results_folder_suffix)
 print(f"loading fine checkpoint {fine_ckpt}")
 if fine_ckpt is not None:
     fine_trainer.load(fine_ckpt)

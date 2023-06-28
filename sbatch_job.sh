@@ -19,7 +19,8 @@ source venv/bin/activate # in case this hasn't already been done
 # export CUDA_LAUNCH_BLOCKING=1
 
 RUN_MODE=$1 # required, see audiolm_pytorch_demo_laion.py
-python -u audiolm_pytorch_demo_laion.py "$@" --slurm_job_id $SLURM_JOB_ID --run_mode $RUN_MODE --parallel_training
+echo "run mode: " $RUN_MODE
+python -u audiolm_pytorch_demo_laion.py --slurm_job_id $SLURM_JOB_ID --run_mode $RUN_MODE --parallel_training
 
 # echo "Model training completed. Now saving results to s3..."
 # default to saving to LAION s3 bucket
