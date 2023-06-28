@@ -276,7 +276,7 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
     )
 
     generated_wav = audiolm(batch_size = 1)
-    output_path = f"{prefix}/out_{args.slurm_job_id}_{step}.wav"
+    output_path = f"{prefix}/out_job_id_{args.slurm_job_id}_step_{step}.wav"
     sample_rate = 24000
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
