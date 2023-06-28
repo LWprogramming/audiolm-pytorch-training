@@ -281,6 +281,7 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
 if args.parallel_training:
+    print("training in parallel")
     def train_models(steps_to_train):
         for _ in range(steps_to_train):
             semantic_trainer.train_step()
@@ -294,6 +295,7 @@ if args.parallel_training:
         get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
 else:
     # non parallel training
+    print("not training in parallel")
     semantic_trainer.train()
     coarse_trainer.train()
     fine_trainer.train()
