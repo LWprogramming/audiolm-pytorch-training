@@ -61,6 +61,12 @@ parser.add_argument('--semantic', type=str, help='Absolute path to the semantic 
 parser.add_argument('--coarse', type=str, help='Absolute path to the coarse checkpoint', default=None)
 parser.add_argument('--fine', type=str, help='Absolute path to the fine checkpoint', default=None)
 parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for creating results folders', required=True)
+
+parser.add_argument('--no_parallel_training', dest='parallel_training', help="disable parallel training, forcing transformers to train in sequence." action='store_false')
+parser.add_argument('--parallel_training', dest='parallel_training', help="enable parallel training, forcing transformers to train a little bit before handing off to the next transformer. Good for seeing how results progressively get better." action='store_true')
+parser.set_defaults(parallel_training=False)
+
+
 args = parser.parse_args()
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
@@ -259,15 +265,8 @@ if fine_ckpt is not None:
 # fine_trainer.train()
 
 ################
-def train_models(steps_to_train):
-    for _ in range(steps_to_train):
-        semantic_trainer.train_step()
-        coarse_trainer.train_step()
-        fine_trainer.train_step()
-
-for step in range(0, num_train_steps, save_every):
-    train_models(save_every)
-
+# All together now
+def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step):
     # Generate output and save
     audiolm = AudioLM(
         wav2vec = wav2vec,
@@ -281,6 +280,25 @@ for step in range(0, num_train_steps, save_every):
     output_path = f"{prefix}/out_{args.slurm_job_id}_{step}.wav"
     sample_rate = 24000
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
+
+if args.parallel_training:
+    def train_models(steps_to_train):
+        for _ in range(steps_to_train):
+            semantic_trainer.train_step()
+        for _ in range(steps_to_train):
+            coarse_trainer.train_step()
+        for _ in range(steps_to_train):
+            fine_trainer.train_step()
+
+    for step in range(0, num_train_steps, save_every):
+        train_models(save_every)
+        get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
+else:
+    # non parallel training
+    semantic_trainer.train()
+    coarse_trainer.train()
+    fine_trainer.train()
+    get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, num_train_steps)
 
 
 # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, profile_memory=True, use_cuda=True) as prof:
