@@ -25,6 +25,8 @@ python hubert_ckpt_download.py
 # Run the use_patched_audiolm.py script
 python use_patched_audiolm.py personal_hacks
 
+pip install tensorboardX # for some reason not covered separately
+
 # Download the dataset
 cd ../audiolm-pytorch-datasets
 wget https://www.openslr.org/resources/12/dev-clean.tar.gz
