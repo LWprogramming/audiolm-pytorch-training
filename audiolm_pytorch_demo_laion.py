@@ -58,7 +58,7 @@ print("parsed args")
 if args.run_mode == "openslr":
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/LibriSpeech-dev-clean/dev-clean"
     num_train_steps = 1000001
-    save_every = 100000
+    save_every = 5000
     batch_size = 8
     grad_accum_every = 16
 elif args.run_mode == "cocochorales_overfit_1_second":
