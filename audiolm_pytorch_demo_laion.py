@@ -47,7 +47,7 @@ parser.add_argument('--parallel_training', dest='parallel_training', help="enabl
 parser.add_argument('--run_mode',
                     type=str,
                     help='run configuration (pick from choices). Sets dataset_folder, num_train_steps, save_every, batch_size, and grad_accum_every',
-                    choices=["openslr", "cocochorales_overfit_1_second", "cocochorales_overfit"],
+                    choices=["openslr", "cocochorales_overfit_1_second", "cocochorales_overfit", "cocochorales_test_custom_dataset"],
                     default=None,
                     required=True)
 parser.set_defaults(parallel_training=False)
@@ -55,7 +55,9 @@ args = parser.parse_args()
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
 
+ # dataset and dataset_folder generally don't show up together-- only one will be defined per run configuration
 if args.run_mode == "openslr":
+    dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/LibriSpeech-dev-clean/dev-clean"
     num_train_steps = 1000001
     save_every = 5000
@@ -63,6 +65,7 @@ if args.run_mode == "openslr":
     grad_accum_every = 16
 elif args.run_mode == "cocochorales_overfit_1_second":
     # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
+    dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
     num_train_steps = 5001
     save_every = 1000
@@ -70,7 +73,17 @@ elif args.run_mode == "cocochorales_overfit_1_second":
     grad_accum_every = 1
 elif args.run_mode == "cocochorales_overfit":
     # try a single un-trimmed data point direct from cocochorales, default at 16kHz
+    dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_single_sample_unprocessed"
+    num_train_steps = 5001
+    save_every = 1000
+    batch_size = 1
+    grad_accum_every = 1
+elif args.run_mode == "cocochorales_test_custom_dataset":
+    # try writing a custom Dataset for concatenating samples to learn accompaniments
+    raise AssertionError("not implemented yet")
+    dataset = None
+    dataset_folder = None
     num_train_steps = 5001
     save_every = 1000
     batch_size = 1
@@ -197,6 +210,7 @@ semantic_transformer = SemanticTransformer(
 semantic_trainer = SemanticTransformerTrainer(
     transformer = semantic_transformer,
     wav2vec = wav2vec,
+    dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
     folder = dataset_folder,
     batch_size = 8,
     grad_accum_every = 16,
@@ -229,6 +243,7 @@ coarse_trainer = CoarseTransformerTrainer(
     transformer = coarse_transformer,
     codec = codec,
     wav2vec = wav2vec,
+    dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
     folder = dataset_folder,
     batch_size = 8,
     grad_accum_every = 16,
@@ -260,6 +275,7 @@ fine_transformer = FineTransformer(
 fine_trainer = FineTransformerTrainer(
     transformer = fine_transformer,
     codec = codec,
+    dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
     folder = dataset_folder,
     batch_size = 8,
     grad_accum_every = 16,
