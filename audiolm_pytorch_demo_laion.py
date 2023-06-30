@@ -101,11 +101,13 @@ elif args.run_mode == "test_long_sample":
     dataset = None
     # data generated from mix.wav with shell command
     # for i in {1..30}; do ffmpeg -i mix.wav -ss 3 -to 17 -c copy segment$i.wav; done && for i in {1..30}; do printf "file '%s'\n" segment$i.wav >> list.txt; done && ffmpeg -f concat -safe 0 -i list.txt -c copy output.wav && rm segment*.wav list.txt
+    # Then in /fsx, copy it so you have enough for batch up to 32
+    # for i in {0..32}; do cp output.wav output_copy_$i.wav; done
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/test_long_sample"
     num_train_steps = 101
     save_every = 50
-    batch_size = 1
-    grad_accum_every = 1
+    batch_size = 8
+    grad_accum_every = 16
     data_max_length = None
     data_max_length_seconds = 5
 else:
