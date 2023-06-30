@@ -63,6 +63,8 @@ if args.run_mode == "openslr":
     save_every = 5000
     batch_size = 8
     grad_accum_every = 16
+    data_max_length = 24000
+    data_max_length_seconds = None
 elif args.run_mode == "cocochorales_overfit_1_second":
     # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
     dataset = None
@@ -71,6 +73,8 @@ elif args.run_mode == "cocochorales_overfit_1_second":
     save_every = 1000
     batch_size = 1
     grad_accum_every = 1
+    data_max_length = 24000
+    data_max_length_seconds = None
 elif args.run_mode == "cocochorales_overfit":
     # try a single un-trimmed data point direct from cocochorales, default at 16kHz
     dataset = None
@@ -79,6 +83,8 @@ elif args.run_mode == "cocochorales_overfit":
     save_every = 1000
     batch_size = 1
     grad_accum_every = 1
+    data_max_length = 24000
+    data_max_length_seconds = None
 elif args.run_mode == "cocochorales_test_custom_dataset":
     # try writing a custom Dataset for concatenating samples to learn accompaniments
     raise AssertionError("not implemented yet")
@@ -88,6 +94,20 @@ elif args.run_mode == "cocochorales_test_custom_dataset":
     save_every = 1000
     batch_size = 1
     grad_accum_every = 1
+    data_max_length = 24000
+    data_max_length_seconds = None
+elif args.run_mode == "test_long_sample":
+    # try out really long lengths to get a sense of how long the data input can be
+    dataset = None
+    # data generated from mix.wav with shell command
+    # for i in {1..30}; do ffmpeg -i mix.wav -ss 3 -to 17 -c copy segment$i.wav; done && for i in {1..30}; do printf "file '%s'\n" segment$i.wav >> list.txt; done && ffmpeg -f concat -safe 0 -i list.txt -c copy output.wav && rm segment*.wav list.txt
+    dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/test_long_sample"
+    num_train_steps = 101
+    save_every = 50
+    batch_size = 1
+    grad_accum_every = 1
+    data_max_length = None
+    data_max_length_seconds = 5
 else:
     raise AssertionError("impossible to be here, bug")
 
@@ -214,7 +234,8 @@ semantic_trainer = SemanticTransformerTrainer(
     folder = dataset_folder,
     batch_size = 8,
     grad_accum_every = 16,
-    data_max_length = 24000,
+    data_max_length = data_max_length,
+    data_max_length_seconds = data_max_length_seconds,
     num_train_steps = num_train_steps,
     save_results_every = save_every,
     save_model_every = save_every,
@@ -247,7 +268,8 @@ coarse_trainer = CoarseTransformerTrainer(
     folder = dataset_folder,
     batch_size = 8,
     grad_accum_every = 16,
-    data_max_length = 24000,
+    data_max_length = data_max_length,
+    data_max_length_seconds = data_max_length_seconds,
     results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
     num_train_steps = num_train_steps,
     save_results_every = save_every,
@@ -279,7 +301,8 @@ fine_trainer = FineTransformerTrainer(
     folder = dataset_folder,
     batch_size = 8,
     grad_accum_every = 16,
-    data_max_length = 24000,
+    data_max_length = data_max_length,
+    data_max_length_seconds = data_max_length_seconds,
     num_train_steps = num_train_steps,
     save_results_every = save_every,
     save_model_every = save_every,
