@@ -98,6 +98,11 @@ elif args.run_mode == "cocochorales_test_custom_dataset":
     data_max_length_seconds = None
 elif args.run_mode == "test_long_sample":
     # try out really long lengths to get a sense of how long the data input can be
+    # Measurements on a single NVIDIA A100-SXM4-40GB:
+    # 20 train steps on this took around 3:40 = 220 seconds, so 1 step in ~10 seconds (if you account for startup taking some time)
+    # Memory usage: 3943MiB / 40960MiB
+    # -- going to see if naively raising num GPUs in sbatch_job.sh to 8 helps
+    # 
     dataset = None
     # data generated from mix.wav with shell command
     # for i in {1..30}; do ffmpeg -i mix.wav -ss 3 -to 17 -c copy segment$i.wav; done && for i in {1..30}; do printf "file '%s'\n" segment$i.wav >> list.txt; done && ffmpeg -f concat -safe 0 -i list.txt -c copy output.wav && rm segment*.wav list.txt
@@ -219,9 +224,6 @@ wav2vec = HubertWithKmeans(
     # checkpoint_path = None,
     kmeans_path = f"{prefix}/{hubert_quantizer}"
 )
-
-num_train_steps = 1000001
-save_every = 100000
 
 semantic_transformer = SemanticTransformer(
     num_semantic_tokens = wav2vec.codebook_size,
