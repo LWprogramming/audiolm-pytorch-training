@@ -47,7 +47,7 @@ parser.add_argument('--parallel_training', dest='parallel_training', help="enabl
 parser.add_argument('--run_mode',
                     type=str,
                     help='run configuration (pick from choices). Sets dataset_folder, num_train_steps, save_every, batch_size, and grad_accum_every',
-                    choices=["openslr", "cocochorales_overfit_1_second", "cocochorales_overfit", "cocochorales_test_custom_dataset"],
+                    choices=["openslr", "cocochorales_overfit_1_second", "cocochorales_overfit", "cocochorales_test_custom_dataset", "test_long_sample"],
                     default=None,
                     required=True)
 parser.set_defaults(parallel_training=False)
