@@ -12,6 +12,8 @@
 
 # datetime=$(date +%Y%m%d-%H%M%S)
 
+# example usage: sbatch sbatch_job.sh test_long_sample --with_profiling
+
 echo "SLURM_JOB_ID: $SLURM_JOB_ID" >> ../audiolm-pytorch-results/output-$SLURM_JOB_ID.log
 source venv/bin/activate # in case this hasn't already been done
 
@@ -19,8 +21,9 @@ source venv/bin/activate # in case this hasn't already been done
 # export CUDA_LAUNCH_BLOCKING=1
 
 RUN_MODE=$1 # required, see audiolm_pytorch_demo_laion.py
+WITH_PROFILING=$2 # not required, defaults to no profiling. Usage: --with_profiling
 echo "run mode: " $RUN_MODE
-python -u audiolm_pytorch_demo_laion.py --slurm_job_id $SLURM_JOB_ID --run_mode $RUN_MODE --parallel_training
+python -u audiolm_pytorch_demo_laion.py --slurm_job_id $SLURM_JOB_ID --run_mode $RUN_MODE --parallel_training $WITH_PROFILING
 
 # echo "Model training completed. Now saving results to s3..."
 # default to saving to LAION s3 bucket

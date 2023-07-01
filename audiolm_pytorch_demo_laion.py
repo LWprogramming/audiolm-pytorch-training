@@ -403,6 +403,7 @@ def trace_handler(prof):
     # ./flamegraph.pl --title "CUDA time" --countname "us." /tmp/profiler_stacks.txt > perf_viz.svg
 
 if args.with_profiling:
+    print("training with profiling")
     with profile(
         activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
         record_shapes=True,
@@ -418,6 +419,7 @@ if args.with_profiling:
         with record_function("train_everything"):
             train_everything()
 else:
+    print("training without profiling")
     train_everything()
 
 #     with record_function("model_inference"):
