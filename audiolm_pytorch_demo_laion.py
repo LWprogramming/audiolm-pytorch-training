@@ -341,12 +341,13 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
 if args.parallel_training:
     print("training in parallel")
     def train_models(steps_to_train):
-        for _ in range(steps_to_train):
-            semantic_trainer.train_step()
-        for _ in range(steps_to_train):
-            coarse_trainer.train_step()
-        for _ in range(steps_to_train):
-            fine_trainer.train_step()
+        for trainer in [semantic_trainer, coarse_trainer, fine_trainer]:
+            start_time = datetime.datetime.now()
+            for _ in range(steps_to_train):
+                trainer.train_step()
+            end_time = datetime.datetime.now()
+            elapsed_time = end_time - start_time
+            print(f"Time taken for {steps_to_train} steps of {trainer.__class__.__name__}: {elapsed_time}")
 
     for step in range(0, num_train_steps, save_every):
         train_models(save_every)
