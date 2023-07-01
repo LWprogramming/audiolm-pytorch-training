@@ -12,7 +12,7 @@ from audiolm_pytorch import HubertWithKmeans, SemanticTransformer, SemanticTrans
 from torch import nn
 import torch
 import torchaudio
-from torch.profiler import profile, record_function, ProfilerActivity
+from torch.profiler import profile, record_function, ProfilerActivity, schedule
 import datetime
 import argparse
 import re
@@ -51,6 +51,7 @@ parser.add_argument('--run_mode',
                     default=None,
                     required=True)
 parser.set_defaults(parallel_training=False)
+parser.add_argument("--with_profiling", type=bool, default=False, nargs='?', const=True)
 args = parser.parse_args()
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
@@ -338,30 +339,87 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
     sample_rate = 24000
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
-if args.parallel_training:
-    print("training in parallel")
-    def train_models(steps_to_train):
-        for trainer in [semantic_trainer, coarse_trainer, fine_trainer]:
-            start_time = datetime.datetime.now()
-            for _ in range(steps_to_train):
-                trainer.train_step()
-            end_time = datetime.datetime.now()
-            elapsed_time = end_time - start_time
-            print(f"Time taken for {steps_to_train} steps of {trainer.__class__.__name__}: {elapsed_time}")
+def train_everything(profiler=None):
+    # pass in profiler as an optional argument. If we're not doing profiling, then nothing happens.
+    # If we're doing profiling (implemented only for training in parallel because it'd require more work to do it in series as well since we need to manually run profiler.step() to work with the profiler schedule), this just profiles the *second* save_every steps segment
+    # see: https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html#using-profiler-to-analyze-long-running-jobs for more info on profiler.step() and schedules. We use the second save_every steps instead of the first in case there's any weird overhead to setting things up.
+    if args.parallel_training:
+        print("training in parallel")
+        def train_models(steps_to_train):
+            for trainer in [semantic_trainer, coarse_trainer, fine_trainer]:
+                start_time = datetime.datetime.now()
+                for _ in range(steps_to_train):
+                    trainer.train_step()
+                end_time = datetime.datetime.now()
+                elapsed_time = end_time - start_time
+                print(f"Time taken for {steps_to_train} steps of {trainer.__class__.__name__}: {elapsed_time}")
 
-    for step in range(0, num_train_steps, save_every):
-        train_models(save_every)
-        get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
+        for step in range(0, num_train_steps, save_every):
+            train_models(save_every)
+            if profiler is not None:
+                profiler.step()
+            get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
+    else:
+        # non parallel training
+        assert profiler is None, "profiling not implemented for training NOT in parallel"
+        print("not training in parallel")
+        semantic_trainer.train()
+        coarse_trainer.train()
+        fine_trainer.train()
+        get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, num_train_steps)
+
+def trace_handler(prof):
+    profile_log = f"{prefix}/profiler_{args.slurm_job_id}.txt"
+    # Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time spent in children operator calls, while total cpu time includes it.
+    f.write("cpu_time_total:\n")
+    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
+    f.write("\nself_cpu_time_total:\n") 
+    f.write(f"{prof.key_averages().table(sort_by='self_cpu_time_total', row_limit=10)}")
+    f.write("\ncpu_memory_usage:\n")
+    f.write(f"{prof.key_averages().table(sort_by='cpu_memory_usage', row_limit=10)}\n")
+    f.write("\nself_cpu_memory_usage:\n") 
+    f.write(f"{prof.key_averages().table(sort_by='self_cpu_memory_usage', row_limit=10)}")
+
+    f.write("cuda_time_total:\n")
+    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total', row_limit=10)}")
+    f.write("\nself_cuda_time_total:\n") 
+    f.write(f"{prof.key_averages().table(sort_by='self_cuda_time_total', row_limit=10)}")
+    f.write("\ncuda_memory_usage:\n")
+    f.write(f"{prof.key_averages().table(sort_by='cuda_memory_usage', row_limit=10)}\n")
+    f.write("\nself_cuda_memory_usage:\n") 
+    f.write(f"{prof.key_averages().table(sort_by='self_cuda_memory_usage', row_limit=10)}")
+
+    # Also try this:
+    # You can examine the sequence of profiled operators and CUDA kernels in Chrome trace viewer (chrome://tracing):
+    prof.export_chrome_trace(f"trace_{args.slurm_job_id}.json")
+
+    # export stacks to check out flamegraph too
+    # TODO: if this works, try it
+    # prof.export_stacks("/tmp/profiler_stacks_{args.slurm_job_id}.txt", "self_cuda_time_total")
+    # From the profiler docs:
+    # We recommend using Flamegraph tool to generate an interactive .svg file:
+    # git clone https://github.com/brendangregg/FlameGraph
+    # cd FlameGraph
+    # ./flamegraph.pl --title "CUDA time" --countname "us." /tmp/profiler_stacks.txt > perf_viz.svg
+
+if args.with_profiling:
+    with profile(
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+        record_shapes=True,
+        profile_memory=True,
+        use_cuda=True,
+        with_stack=True,
+        schedule=torch.profiler.schedule(
+            wait=0,
+            warmup=1,
+            active=1,
+            repeat=1),
+        on_trace_ready=trace_handler) as prof:
+        with record_function("train_everything"):
+            train_everything()
 else:
-    # non parallel training
-    print("not training in parallel")
-    semantic_trainer.train()
-    coarse_trainer.train()
-    fine_trainer.train()
-    get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, num_train_steps)
+    train_everything()
 
-
-# with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, profile_memory=True, use_cuda=True) as prof:
 #     with record_function("model_inference"):
 #         generated_wav = audiolm(batch_size = 1)
 #         output_path = f"{prefix}/out.wav"
