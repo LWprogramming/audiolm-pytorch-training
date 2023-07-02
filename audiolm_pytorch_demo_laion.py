@@ -72,6 +72,7 @@ if args.run_mode == "openslr":
     data_max_length = 24000
     data_max_length_seconds = None
 elif args.run_mode == "bare_minimum":
+    dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
     num_train_steps = 1
     save_every = 1
