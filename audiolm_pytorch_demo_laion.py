@@ -47,7 +47,12 @@ parser.add_argument('--parallel_training', dest='parallel_training', help="enabl
 parser.add_argument('--run_mode',
                     type=str,
                     help='run configuration (pick from choices). Sets dataset_folder, num_train_steps, save_every, batch_size, and grad_accum_every',
-                    choices=["openslr", "cocochorales_overfit_1_second", "cocochorales_overfit", "cocochorales_test_custom_dataset", "test_long_sample"],
+                    choices=["openslr",
+                            "bare_minimum",
+                            "cocochorales_overfit_1_second",
+                            "cocochorales_overfit",
+                            "cocochorales_test_custom_dataset",
+                            "test_long_sample"],
                     default=None,
                     required=True)
 parser.set_defaults(parallel_training=False)
@@ -64,6 +69,14 @@ if args.run_mode == "openslr":
     save_every = 5000
     batch_size = 8
     grad_accum_every = 16
+    data_max_length = 24000
+    data_max_length_seconds = None
+elif args.run_mode == "bare_minimum":
+    dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
+    num_train_steps = 1
+    save_every = 1
+    batch_size = 1
+    grad_accum_every = 1
     data_max_length = 24000
     data_max_length_seconds = None
 elif args.run_mode == "cocochorales_overfit_1_second":
@@ -371,23 +384,24 @@ def train_everything(profiler=None):
 def trace_handler(prof):
     profile_log = f"{prefix}/profiler_{args.slurm_job_id}.txt"
     # Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time spent in children operator calls, while total cpu time includes it.
-    f.write("cpu_time_total:\n")
-    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
-    f.write("\nself_cpu_time_total:\n") 
-    f.write(f"{prof.key_averages().table(sort_by='self_cpu_time_total', row_limit=10)}")
-    f.write("\ncpu_memory_usage:\n")
-    f.write(f"{prof.key_averages().table(sort_by='cpu_memory_usage', row_limit=10)}\n")
-    f.write("\nself_cpu_memory_usage:\n") 
-    f.write(f"{prof.key_averages().table(sort_by='self_cpu_memory_usage', row_limit=10)}")
+    with open(profile_log, "w") as f:
+        f.write("cpu_time_total:\n")
+        f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
+        f.write("\nself_cpu_time_total:\n") 
+        f.write(f"{prof.key_averages().table(sort_by='self_cpu_time_total', row_limit=10)}")
+        f.write("\ncpu_memory_usage:\n")
+        f.write(f"{prof.key_averages().table(sort_by='cpu_memory_usage', row_limit=10)}\n")
+        f.write("\nself_cpu_memory_usage:\n") 
+        f.write(f"{prof.key_averages().table(sort_by='self_cpu_memory_usage', row_limit=10)}")
 
-    f.write("cuda_time_total:\n")
-    f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total', row_limit=10)}")
-    f.write("\nself_cuda_time_total:\n") 
-    f.write(f"{prof.key_averages().table(sort_by='self_cuda_time_total', row_limit=10)}")
-    f.write("\ncuda_memory_usage:\n")
-    f.write(f"{prof.key_averages().table(sort_by='cuda_memory_usage', row_limit=10)}\n")
-    f.write("\nself_cuda_memory_usage:\n") 
-    f.write(f"{prof.key_averages().table(sort_by='self_cuda_memory_usage', row_limit=10)}")
+        f.write("cuda_time_total:\n")
+        f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total', row_limit=10)}")
+        f.write("\nself_cuda_time_total:\n") 
+        f.write(f"{prof.key_averages().table(sort_by='self_cuda_time_total', row_limit=10)}")
+        f.write("\ncuda_memory_usage:\n")
+        f.write(f"{prof.key_averages().table(sort_by='cuda_memory_usage', row_limit=10)}\n")
+        f.write("\nself_cuda_memory_usage:\n") 
+        f.write(f"{prof.key_averages().table(sort_by='self_cuda_memory_usage', row_limit=10)}")
 
     # Also try this:
     # You can examine the sequence of profiled operators and CUDA kernels in Chrome trace viewer (chrome://tracing):
