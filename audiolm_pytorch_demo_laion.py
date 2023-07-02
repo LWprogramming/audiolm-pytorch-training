@@ -385,6 +385,7 @@ def train_everything(profiler=None):
 def trace_handler(prof):
     profile_log = f"{prefix}/profiler_{args.slurm_job_id}.txt"
     # Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time spent in children operator calls, while total cpu time includes it.
+    print(f"arrived in trace_handler, logfile name {profile_log}")
     with open(profile_log, "w") as f:
         f.write("cpu_time_total:\n")
         f.write(f"{prof.key_averages(group_by_input_shape=True).table(sort_by='cpu_time_total', row_limit=10)}")
@@ -430,9 +431,9 @@ if args.with_profiling:
             warmup=1,
             active=1,
             repeat=1),
-        on_trace_ready=trace_handler) as prof:
+        on_trace_ready=trace_handler) as profiler:
         with record_function("train_everything"):
-            train_everything()
+            train_everything(profiler=profiler)
 else:
     print("training without profiling")
     train_everything()
