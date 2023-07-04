@@ -155,7 +155,7 @@ def get_potential_checkpoint_path(transformer_name, trainer, prefix, results_fol
     max_step = max(steps, default=0)
 
     if max_step % trainer.save_model_every != 0 or max_step > trainer.num_train_steps:
-        raise ValueError("Invalid checkpoint step")
+        raise ValueError(f"Invalid checkpoint step, with max_step {max_step} and save_model_every {trainer.save_model_every} and num_train_steps {trainer.num_train_steps}")
 
     return f"{results_folder}/{transformer_name}.transformer.{max_step}.pt" if max_step > 0 else None
 
