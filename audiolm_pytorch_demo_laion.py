@@ -418,7 +418,7 @@ def trace_handler(prof):
 
     # Also try this:
     # You can examine the sequence of profiled operators and CUDA kernels in Chrome trace viewer (chrome://tracing):
-    prof.export_chrome_trace(f"trace_{args.slurm_job_id}.json")
+    prof.export_chrome_trace(f"{prefix}/trace_{args.slurm_job_id}.json")
 
     # export stacks to check out flamegraph too
     # TODO: if this works, try it
