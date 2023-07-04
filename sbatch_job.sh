@@ -17,7 +17,7 @@
 # Sometimes slurm jobs get pre-empted. If this ends up happening, we want to have two things recorded: the current training script, so we can properly restart training (in case there were breaking changes previously made). It'd take a good bit more effort to save a separate audiolm_pytorch version for each run, while the API for that doesn't change much, so I'm going to skip that for now.
 # See also https://twitter.com/miraculous_cake/status/1676003814372151297
 # This is somewhat like the fork() function in unix operating systems
-if [[! -f audiolm_pytorch_demo_laion_$SLURM_JOB_ID.py || ! -f sbatch_job_$SLURM_JOB_ID.sh ]]; then
+if [[ ! -f audiolm_pytorch_demo_laion_$SLURM_JOB_ID.py || ! -f sbatch_job_$SLURM_JOB_ID.sh ]]; then
   cp audiolm_pytorch_demo_laion.py audiolm_pytorch_demo_laion_$SLURM_JOB_ID.py
   cp sbatch_job.sh sbatch_job_$SLURM_JOB_ID.sh
 fi
