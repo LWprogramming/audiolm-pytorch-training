@@ -30,8 +30,8 @@ s3_folder = f"slurm-job-{job_id}-audiolm-{audiolm_version}"
 
 # Transfer output and error logs, generation, along with the scripts to run the code.
 # I made the bucket back when I was trying paperspace and now it's my catch-all for any temporary ML stuff that I need to back up, oops... naming things is hard
-subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/sbatch_job.sh", f"s3://{bucket_prefix}/{s3_folder}/sbatch_job.sh", "--profile", "laion-stability-my-s3-bucket"])
-subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/audiolm_pytorch_demo_laion.py", f"s3://{bucket_prefix}/{s3_folder}/audiolm_pytorch_demo_laion.py", "--profile", "laion-stability-my-s3-bucket"])
+subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/sbatch_job_{job_id}.sh", f"s3://{bucket_prefix}/{s3_folder}/sbatch_job.sh", "--profile", "laion-stability-my-s3-bucket"])
+subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/audiolm_pytorch_demo_laion_{job_id}.py", f"s3://{bucket_prefix}/{s3_folder}/audiolm_pytorch_demo_laion.py", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/output-{job_id}.log", f"s3://{bucket_prefix}/{s3_folder}/output-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/error-{job_id}.log", f"s3://{bucket_prefix}/{s3_folder}/error-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
 output_filename = f"out_job_id_{job_id}_step_{step}.wav" # should match what is saved in audiolm_pytorch_demo_laion.py
