@@ -360,13 +360,24 @@ def train_everything(profiler=None):
     if args.parallel_training:
         print("training in parallel")
         def train_models(steps_to_train):
-            for trainer in [semantic_trainer, coarse_trainer, fine_trainer]:
+            # Due to preemption in Slurm, we might see a checkpoint for one model but not the others. Since our parallel training trains models in a round-robin fashion, we figure out the first trainer for which we *don't* have a checkpoint and train that one.
+            # This is a bit hacky, but it works.
+            if semantic_trainer.steps == 0:
+                trainer_index = 0
+            elif coarse_trainer.steps < semantic_trainer.steps:
+                trainer_index = 1
+            elif coarse_trainer.steps == semantic_trainer.steps and fine_trainer.steps < semantic_trainer.steps:
+                trainer_index = 2
+            else:
+                trainer_index = 0 # all the models have an equal train step-- start from the beginning
+            trainers = [semantic_trainer, coarse_trainer, fine_trainer]
+            for i in range(trainer_index, len(trainers)):
                 start_time = datetime.datetime.now()
                 for _ in range(steps_to_train):
-                    trainer.train_step()
+                    trainers[i].train_step()
                 end_time = datetime.datetime.now()
                 elapsed_time = end_time - start_time
-                print(f"Time taken for {steps_to_train} steps of {trainer.__class__.__name__}: {elapsed_time}")
+                print(f"Time taken for {steps_to_train} steps of {trainers[i].__class__.__name__}: {elapsed_time}")
 
         for step in range(0, num_train_steps, save_every):
             train_models(save_every)
