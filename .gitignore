@@ -135,6 +135,9 @@ dmypy.json
 audiolm_pytorch
 audiolm-pytorch-personal-hacks.zip
 *.wav
+# auto-generated snapshots of training scripts
+audiolm_pytorch_demo_laion_[0-9]*.py
+sbatch_job_[0-9]*.sh
 # profiler/trace
 profile*.txt
 trace*.json
