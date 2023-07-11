@@ -135,6 +135,8 @@ dmypy.json
 audiolm_pytorch
 audiolm-pytorch-personal-hacks.zip
 *.wav
-
+# profiler/trace
+profile*.txt
+trace*.json
 # pycharm
 .idea/
