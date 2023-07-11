@@ -8,8 +8,8 @@
 # 96 + 12 + 12  (train + validate + test) = 120 such folders (?) each containing a bunch of samples, and given that the main dataset is 569 GB, I estimate the train alone is around 455ish GB. After saving only the stem_audio wavs in each sample, we reduce the size per-sample to about 3/4 of the original sample folder, so we end up with around a 340ish GB download.
 # Just to be on the safe side, we'll split the download into multiple parts and process the unzipping for each part, to ensure no individual segment ends up overloading the fsx storage.
 
-mkdir cocochorales_main_dataset_v1_zipped
-cd cocochorales_main_dataset_v1_zipped
+mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
+cd /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 
 # download md5
 wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/cocochorales_md5s.txt
