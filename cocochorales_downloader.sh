@@ -22,6 +22,19 @@ for i in $(seq 1 1 2); do
   cd ../cocochorales_main_dataset_v1
   mkdir $i
   tar -xvjf ../cocochorales_main_dataset_v1_zipped/$i.tar.bz2 -C ./$i
+
+  # Cleanup: keep only stem wavs
+  cd $i
+  # Loop through subfolders
+  for subfolder in */; do
+    cd "$subfolder"
+    cp stems_audio/*.wav ../
+    # Delete all other files
+    rm -rf stems_audio stems_midi metadata.yaml mix.mid mix.wav
+    cd .. # back to $i
+  done
+  cd .. # back to cocochorales_main_dataset_v1
+
   cd ../cocochorales_main_dataset_v1_zipped
 done
 
