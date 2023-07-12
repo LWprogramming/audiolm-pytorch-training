@@ -23,7 +23,7 @@ for i in $(seq 1 1 96); do
 
   cd ../cocochorales_main_dataset_v1
   mkdir $i
-  tar -xvjf ../cocochorales_main_dataset_v1_zipped/$i.tar.bz2 -C ./$i
+  tar -xjf ../cocochorales_main_dataset_v1_zipped/$i.tar.bz2 -C ./$i
   # copy to s3, unzipped. only run this once!
   aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/"$i" s3://itsleonwu-laion/cocochorales_main_dataset_v1 --recursive --profile laion-stability-my-s3-bucket
 
