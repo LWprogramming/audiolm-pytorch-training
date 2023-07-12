@@ -26,5 +26,6 @@ for i in $(seq 1 1 2); do
 done
 
 # copy to s3, both zipped and local
-aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1 s3://s-laion/itsleonwu/cocochorales_main_dataset_v1 --recursive --profile laion-stability-my-s3-bucket
-aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped s3://s-laion/itsleonwu/cocochorales_main_dataset_v1_zipped --recursive --profile laion-stability-my-s3-bucket
+#never mind seems something wrong with perms
+#aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1 s3://s-laion/itsleonwu/cocochorales_main_dataset_v1 --recursive --profile laion-stability-my-s3-bucket
+#aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped s3://s-laion/itsleonwu/cocochorales_main_dataset_v1_zipped --recursive --profile laion-stability-my-s3-bucket
