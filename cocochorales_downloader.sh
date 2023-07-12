@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=g40x
+#SBATCH --partition=cpu64
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=64
 #SBATCH --job-name=download-cocochorales
