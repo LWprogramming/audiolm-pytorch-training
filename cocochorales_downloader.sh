@@ -19,13 +19,14 @@ wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochoral
 for i in $(seq 1 1 96); do
   wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2
   # copy to s3, zipped. only run this once!
-  aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped/"$i".tar.bz2 s3://s-laion/itsleonwu-laion/cocochorales_main_dataset_v1_zipped --profile laion-stability-my-s3-bucket
+  # aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped/"$i".tar.bz2 s3://s-laion/itsleonwu-laion/cocochorales_main_dataset_v1_zipped --profile laion-stability-my-s3-bucket
 
   cd ../cocochorales_main_dataset_v1
   mkdir $i
   tar -xjf ../cocochorales_main_dataset_v1_zipped/$i.tar.bz2 -C ./$i
   # copy to s3, unzipped. only run this once!
-  aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/"$i" s3://itsleonwu-laion/cocochorales_main_dataset_v1 --recursive --profile laion-stability-my-s3-bucket
+  # TODO: if i ever uncomment this: need to add dir "$i" to s3 path
+  # aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/"$i" s3://itsleonwu-laion/cocochorales_main_dataset_v1/ --recursive --profile laion-stability-my-s3-bucket
 
   # Cleanup: keep only stem wavs
   cd $i
