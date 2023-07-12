@@ -8,6 +8,7 @@
 # 96 + 12 + 12  (train + validate + test) = 120 such folders (?) each containing a bunch of samples, and given that the main dataset is 569 GB, I estimate the train alone is around 455ish GB. After saving only the stem_audio wavs in each sample, we reduce the size per-sample to about 3/4 of the original sample folder, so we end up with around a 340ish GB download.
 # Just to be on the safe side, we'll split the download into multiple parts and process the unzipping for each part, to ensure no individual segment ends up overloading the fsx storage.
 
+mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1 # unzipped
 mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 cd /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 
@@ -15,13 +16,15 @@ cd /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/cocochorales_md5s.txt
 
 # download main dataset, specifically train
-mkdir main_dataset_train
 # TODO: split this into multiple sections; just downloading one for now to proof of concept
-#for i in $(seq 1 1 96); do
-#  wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2 -P main_dataset_train
-#done
-wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/1.tar.bz2 -P main_dataset_train
+for i in $(seq 1 1 2); do
+  wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2
+  cd ../cocochorales_main_dataset_v1
+  mkdir $i
+  tar -xvjf ../cocochorales_main_dataset_v1_zipped/$i.tar.bz2 -C ./$i
+  cd ../cocochorales_main_dataset_v1_zipped
+done
 
-# extract the tar files. reqiures pbzip2
-python data_download/extract_tars.py --data_dir cocochorales_main_dataset_v1_zipped --output_dir /fsx/itsleonwu/audiolm-pytorch-datasets
-
+# copy to s3, both zipped and local
+aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1 s3://s-laion/itsleonwu/cocochorales_main_dataset_v1 --recursive --profile laion-stability-my-s3-bucket
+aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped s3://s-laion/itsleonwu/cocochorales_main_dataset_v1_zipped --recursive --profile laion-stability-my-s3-bucket
