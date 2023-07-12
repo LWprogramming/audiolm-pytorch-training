@@ -1,15 +1,5 @@
 #!/bin/bash
 
-#SBATCH --partition=cpu64
-#SBATCH --nodes=1
-#SBATCH --cpus-per-task=64
-#SBATCH --job-name=download-cocochorales
-#SBATCH --comment=laion
-#SBATCH --open-mode=append
-#SBATCH --output=../cocochorales-download-results-output-%A.log
-#SBATCH --error=../cocochorales-download-results-error-%A.log
-
-
 # Mostly based on the cocochorales download script. We only care about the wav files so we don't
 # need to download the other files related to midi.
 # The main dataset is too big for fsx (500+ GB) but in each sample we only need the wav stems,
