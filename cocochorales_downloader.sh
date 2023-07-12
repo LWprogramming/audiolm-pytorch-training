@@ -16,8 +16,7 @@ cd /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/cocochorales_md5s.txt
 
 # download main dataset, specifically train
-# TODO: split this into multiple sections; just downloading one for now to proof of concept
-for i in $(seq 1 1 2); do
+for i in $(seq 1 1 96); do
   wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2
   # copy to s3, zipped. only run this once!
   aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped/"$i".tar.bz2 s3://s-laion/itsleonwu-laion/cocochorales_main_dataset_v1_zipped --profile laion-stability-my-s3-bucket
@@ -39,7 +38,7 @@ for i in $(seq 1 1 2); do
     cd .. # back to $i
   done
   cd .. # back to cocochorales_main_dataset_v1
-
+  echo "completed $i"
   cd ../cocochorales_main_dataset_v1_zipped
 done
 
