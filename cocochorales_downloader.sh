@@ -3,10 +3,8 @@
 # Mostly based on the cocochorales download script. We only care about the wav files so we don't
 # need to download the other files related to midi.
 # The main dataset is too big for fsx (500+ GB) but in each sample we only need the wav stems,
-# not the full mix. In addition, I'm fine with only downloading the training set for now, because
-# the audiolm_pytorch code auto-separates code into train/valid/test sets. There look to be
-# 96 + 12 + 12  (train + validate + test) = 120 such folders (?) each containing a bunch of samples, and given that the main dataset is 569 GB, I estimate the train alone is around 455ish GB. After saving only the stem_audio wavs in each sample, we reduce the size per-sample to about 3/4 of the original sample folder, so we end up with around a 340ish GB download.
-# Just to be on the safe side, we'll split the download into multiple parts and process the unzipping for each part, to ensure no individual segment ends up overloading the fsx storage.
+# not the full mix. After doing this trimming we get around 5.5 GB per folder, so we'll download from 1-60 inclusive = 330 GB to be on the safe side.
+# In any case, the audiolm_pytorch code auto-separates code into train/valid/test sets. In reality there are 1-96 for train, and then 1-12 for valid and test each, but we'll just use the first 60 for now.
 
 mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1 # unzipped
 mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
@@ -18,7 +16,7 @@ if [ ! -f "cocochorales_md5s.txt" ]; then
 fi
 
 # download main dataset, specifically train
-for i in $(seq 1 1 96); do
+for i in $(seq 1 1 60); do
   # wget if $i.tar.bz2 doesn't exist in cocochorales_main_dataset_v1_zipped
   if [ ! -f "$i".tar.bz2 ]; then
     wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2
