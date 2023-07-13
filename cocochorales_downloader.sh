@@ -28,8 +28,7 @@ for i in $(seq 1 1 96); do
   mkdir $i
   tar -xjf ../cocochorales_main_dataset_v1_zipped/$i.tar.bz2 -C ./$i
   # copy to s3, unzipped. only run this once!
-  # TODO: if i ever uncomment this: need to add dir "$i" to s3 path
-  # aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/"$i" s3://itsleonwu-laion/cocochorales_main_dataset_v1/ --recursive --profile laion-stability-my-s3-bucket
+  aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/"$i" s3://itsleonwu-laion/cocochorales_main_dataset_v1/$i --recursive --profile laion-stability-my-s3-bucket
 
   # Cleanup: keep only stem wavs
   cd $i
