@@ -232,7 +232,7 @@ codec = EncodecWrapper()
 
 #############
 
-accelerate_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True).to_kwargs()
+accelerate_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
 # this argument for avoiding error that indicates that your module has parameters that were not used in producing loss
 # see link: https://github.com/huggingface/accelerate/issues/24#issuecomment-814106927
 
