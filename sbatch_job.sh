@@ -13,6 +13,10 @@
 # datetime=$(date +%Y%m%d-%H%M%S)
 
 # example usage: sbatch sbatch_job.sh -r test_long_sample -p --with_profiling -s 123456
+echo "this slurm job id"
+echo %A
+echo "other"
+echo ${%A}
 
 # parse arguments
 # Unfortunately, the `getopts` function in bash only supports single-character options, can't name it without a more complicated solution
@@ -25,7 +29,7 @@ while getopts "r:p:s:" opt; do
       WITH_PROFILING=$OPTARG
       ;;
     s)
-      OVERRIDABLE_SLURM_JOB_ID=${OPTARG:-"%A"} # use this job's slurm job id by default
+      OVERRIDABLE_SLURM_JOB_ID=${OPTARG:-${%A}} # use this job's slurm job id by default
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
