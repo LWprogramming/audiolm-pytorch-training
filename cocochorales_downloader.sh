@@ -12,8 +12,10 @@ mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1 # unz
 mkdir /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 cd /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped
 
-# download md5
-wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/cocochorales_md5s.txt
+# download md5 if it doesn't exist already
+if [ ! -f "cocochorales_md5s.txt" ]; then
+  wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/cocochorales_md5s.txt
+fi
 
 # download main dataset, specifically train
 for i in $(seq 1 1 96); do
