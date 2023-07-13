@@ -17,7 +17,10 @@ wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochoral
 
 # download main dataset, specifically train
 for i in $(seq 1 1 96); do
-  wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2
+  # wget if $i.tar.bz2 doesn't exist in cocochorales_main_dataset_v1_zipped
+  if [ ! -f "$i".tar.bz2 ]; then
+    wget https://storage.googleapis.com/magentadata/datasets/cocochorales/cocochorales_full_v1_zipped/main_dataset/train/"$i".tar.bz2
+  fi
   # copy to s3, zipped. only run this once!
   # aws s3 cp /fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1_zipped/"$i".tar.bz2 s3://s-laion/itsleonwu-laion/cocochorales_main_dataset_v1_zipped --profile laion-stability-my-s3-bucket
 
@@ -33,7 +36,7 @@ for i in $(seq 1 1 96); do
   # Loop through subfolders
   for subfolder in */; do
     cd "$subfolder"
-    cp stems_audio/*.wav ../
+    cp stems_audio/*.wav . # copy to subfolder
     # Delete all other files
     rm -rf stems_audio stems_midi metadata.yaml mix.mid mix.wav
     cd .. # back to $i
