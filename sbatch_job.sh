@@ -40,8 +40,6 @@ done
 shift $((OPTIND -1))
 
 OVERRIDABLE_SLURM_JOB_ID=${POTENTIAL_ALTERNATE_SLURM_JOB_ID:-$SLURM_JOB_ID}  # use this job's slurm job id by default, but allow overriding it with a custom value
-echo "OVERRIDABLE_SLURM_JOB_ID"
-echo $OVERRIDABLE_SLURM_JOB_ID
 
 # Sometimes slurm jobs get pre-empted. If this ends up happening, we want to have two things recorded: the current training script, so we can properly restart training (in case there were breaking changes previously made). It'd take a good bit more effort to save a separate audiolm_pytorch version for each run, while the API for that doesn't change much, so I'm going to skip that for now.
 # See also https://twitter.com/miraculous_cake/status/1676003814372151297
