@@ -56,8 +56,3 @@ echo "run mode: " $RUN_MODE
 echo "with profiling: " $WITH_PROFILING
 echo "slurm job id to actually use: " $OVERRIDABLE_SLURM_JOB_ID
 accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --parallel_training
-
-#usage: audiolm_pytorch_demo_laion_.py [-h] --slurm_job_id SLURM_JOB_ID
-#                                      [--no_parallel_training]
-#                                      [--parallel_training] --run_mode
-#                                      {openslr,bare_minimum,cocochorales_overfit_1_second,cocochorales_overfit,cocochorales_test_custom_dataset,test_long_sample}
