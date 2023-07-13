@@ -13,10 +13,6 @@
 # datetime=$(date +%Y%m%d-%H%M%S)
 
 # example usage: sbatch sbatch_job.sh -r test_long_sample -p --with_profiling -s 123456
-echo "this slurm job id"
-echo $SLURM_JOB_ID
-echo "other"
-#echo ${%A}
 
 # parse arguments
 # Unfortunately, the `getopts` function in bash only supports single-character options, can't name it without a more complicated solution
@@ -42,6 +38,9 @@ while getopts "r:p:s:" opt; do
   esac
 done
 shift $((OPTIND -1))
+
+echo "OVERRIDABLE_SLURM_JOB_ID"
+echo $OVERRIDABLE_SLURM_JOB_ID
 
 # Sometimes slurm jobs get pre-empted. If this ends up happening, we want to have two things recorded: the current training script, so we can properly restart training (in case there were breaking changes previously made). It'd take a good bit more effort to save a separate audiolm_pytorch version for each run, while the API for that doesn't change much, so I'm going to skip that for now.
 # See also https://twitter.com/miraculous_cake/status/1676003814372151297
