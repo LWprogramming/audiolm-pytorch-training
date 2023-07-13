@@ -20,7 +20,6 @@ import re
 import random
 import numpy as np
 from torch.utils.data import DataLoader
-from accelerate import DistributedDataParallelKwargs
 
 # import boto3
 # import datetime
@@ -232,10 +231,6 @@ codec = EncodecWrapper()
 
 #############
 
-accelerate_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-# this argument for avoiding error that indicates that your module has parameters that were not used in producing loss
-# see link: https://github.com/huggingface/accelerate/issues/24#issuecomment-814106927
-
 wav2vec = HubertWithKmeans(
     # use_mert = True,
     checkpoint_path = f"{prefix}/{hubert_ckpt}",
@@ -263,7 +258,6 @@ semantic_trainer = SemanticTransformerTrainer(
     save_model_every = save_every,
     results_folder = f"{prefix}/semantic_results_{results_folder_suffix}",
     force_clear_prev_results = False,
-    accelerate_kwargs = accelerate_kwargs
 )
 
 semantic_ckpt = get_potential_checkpoint_path("semantic", semantic_trainer, prefix, results_folder_suffix)
@@ -298,7 +292,6 @@ coarse_trainer = CoarseTransformerTrainer(
     save_results_every = save_every,
     save_model_every = save_every,
     force_clear_prev_results = False,
-    accelerate_kwargs=accelerate_kwargs
 )
 
 coarse_ckpt = get_potential_checkpoint_path("coarse", coarse_trainer, prefix, results_folder_suffix)
@@ -332,7 +325,6 @@ fine_trainer = FineTransformerTrainer(
     save_model_every = save_every,
     results_folder = f"{prefix}/fine_results_{results_folder_suffix}",
     force_clear_prev_results = False,
-    accelerate_kwargs=accelerate_kwargs
 )
 
 fine_ckpt = get_potential_checkpoint_path("fine", fine_trainer, prefix, results_folder_suffix)
