@@ -74,7 +74,7 @@ if args.run_mode == "openslr":
 elif args.run_mode == "bare_minimum":
     dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
-    num_train_steps = 1
+    num_train_steps = 2 # i guess need for avoid off by one error
     save_every = 1
     batch_size = 1
     grad_accum_every = 1
