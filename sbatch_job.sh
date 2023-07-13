@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --partition=g40x
 #SBATCH --nodes=1
-#SBATCH --gpus=1
+#SBATCH --gpus=8
 #SBATCH --cpus-per-gpu=1
 #SBATCH --job-name=audiolm-e2e-openslr-dev-clean
 #SBATCH --comment=laion
@@ -55,5 +55,5 @@ source venv/bin/activate # in case this hasn't already been done
 echo "run mode: " $RUN_MODE
 echo "with profiling: " $WITH_PROFILING
 echo "slurm job id to actually use: " $OVERRIDABLE_SLURM_JOB_ID
-python -u audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --parallel_training
+accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --parallel_training
 

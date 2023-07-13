@@ -116,8 +116,6 @@ elif args.run_mode == "test_long_sample":
     # Measurements on a single NVIDIA A100-SXM4-40GB:
     # 20 train steps on this took around 3:40 = 220 seconds, so 1 step in ~10 seconds (if you account for startup taking some time)
     # Memory usage: 9778 / 40960MiB
-    # -- going to see if naively raising num GPUs in sbatch_job.sh to 8 helps
-    # on 8 gpu it doesn't seem noticeably faster and I don't think I enabled multi-gpu training, marking this as a TODO for later I guess
     dataset = None
     # data generated from mix.wav with shell command
     # for i in {1..30}; do ffmpeg -i mix.wav -ss 3 -to 17 -c copy segment$i.wav; done && for i in {1..30}; do printf "file '%s'\n" segment$i.wav >> list.txt; done && ffmpeg -f concat -safe 0 -i list.txt -c copy output.wav && rm segment*.wav list.txt
