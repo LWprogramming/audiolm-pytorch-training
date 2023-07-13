@@ -25,7 +25,7 @@ while getopts "r:p:s:" opt; do
       WITH_PROFILING=$OPTARG
       ;;
     s)
-      OVERRIDABLE_SLURM_JOB_ID=${OPTARG:-$SLURM_JOB_ID} # use this job's slurm job id by default
+      POTENTIAL_ALTERNATE_SLURM_JOB_ID=$OPTARG
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
@@ -39,6 +39,7 @@ while getopts "r:p:s:" opt; do
 done
 shift $((OPTIND -1))
 
+OVERRIDABLE_SLURM_JOB_ID=${POTENTIAL_ALTERNATE_SLURM_JOB_ID:-$SLURM_JOB_ID}  # use this job's slurm job id by default, but allow overriding it with a custom value
 echo "OVERRIDABLE_SLURM_JOB_ID"
 echo $OVERRIDABLE_SLURM_JOB_ID
 
