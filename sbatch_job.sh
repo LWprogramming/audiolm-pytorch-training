@@ -25,7 +25,7 @@ while getopts "r:p:s:" opt; do
       WITH_PROFILING=$OPTARG
       ;;
     s)
-      OVERRIDABLE_SLURM_JOB_ID=${OPTARG:-$OVERRIDABLE_SLURM_JOB_ID}
+      OVERRIDABLE_SLURM_JOB_ID=${OPTARG:-"%A"} # use this job's slurm job id by default
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
@@ -57,3 +57,7 @@ echo "with profiling: " $WITH_PROFILING
 echo "slurm job id to actually use: " $OVERRIDABLE_SLURM_JOB_ID
 accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --parallel_training
 
+#usage: audiolm_pytorch_demo_laion_.py [-h] --slurm_job_id SLURM_JOB_ID
+#                                      [--no_parallel_training]
+#                                      [--parallel_training] --run_mode
+#                                      {openslr,bare_minimum,cocochorales_overfit_1_second,cocochorales_overfit,cocochorales_test_custom_dataset,test_long_sample}
