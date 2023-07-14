@@ -384,7 +384,12 @@ def train_everything(profiler=None):
             train_models(save_every)
             if profiler is not None:
                 profiler.step()
-            get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
+            # TODO: do we need to wait for everyone here or can we just get away with waiting on main only?
+            if semantic_trainer.accelerator.is_main_process:
+                # they should all be main process if this is called right?
+                assert coarse_trainer.accelerator.is_main_process and fine_trainer.accelerator.is_main_process
+                print(f"semantic_trainer on device {semantic_trainer.device}") # I'm guessing this is either first or last, i.e. 0 or 7
+                get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
     else:
         # non parallel training
         assert profiler is None, "profiling not implemented for training NOT in parallel"
@@ -392,6 +397,7 @@ def train_everything(profiler=None):
         semantic_trainer.train()
         coarse_trainer.train()
         fine_trainer.train()
+        raise NotImplementedError("haven't implemented checking is main process for non-parallel training yet")
         get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, num_train_steps)
 
 def trace_handler(prof):
