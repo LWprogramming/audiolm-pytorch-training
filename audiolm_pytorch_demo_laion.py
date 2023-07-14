@@ -394,8 +394,18 @@ def train_everything(profiler=None):
                 # they should all be main process if this is called right?
                 assert coarse_trainer.accelerator.is_main_process and fine_trainer.accelerator.is_main_process
                 print("generating now...")
-                print(f"semantic_trainer on device {semantic_trainer.device}") # I'm guessing this is either first or last, i.e. 0 or 7
+                # print(f"semantic_trainer on device {semantic_trainer.device}") # device 0
                 get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
+            else:
+                assert not(coarse_trainer.accelerator.is_main_process or fine_trainer.accelerator.is_main_process)
+                print(f"not generating on device {semantic_trainer.device}")
+            print("finished generation")
+            print(f"semantic_trainer on device {semantic_trainer.device} arrived here")
+            semantic_trainer.accelerator.wait_for_everyone()
+            print(f"coarse_trainer on device {coarse_trainer.device} arrived here")
+            coarse_trainer.accelerator.wait_for_everyone()
+            print(f"fine_trainer on device {fine_trainer.device} arrived here")
+            fine_trainer.accelerator.wait_for_everyone()
     else:
         # non parallel training
         assert profiler is None, "profiling not implemented for training NOT in parallel"
