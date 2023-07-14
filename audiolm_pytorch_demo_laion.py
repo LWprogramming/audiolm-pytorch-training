@@ -371,11 +371,14 @@ def train_everything(profiler=None):
             trainers = [semantic_trainer, coarse_trainer, fine_trainer]
             for i in range(trainer_index, len(trainers)):
                 start_time = datetime.datetime.now()
-                for _ in range(steps_to_train):
+                for _ in range(steps_to_train + 1):
+                    # train + 1 to avoid off-by-one errors-- basically we want to train for steps_to_train steps, but we
+                    # also want to train for one more step so that the modular arithmetic triggers and we actually save
+                    # the checkpoint
                     trainers[i].train_step()
                 end_time = datetime.datetime.now()
                 elapsed_time = end_time - start_time
-                print(f"Time taken for {steps_to_train} steps of {trainers[i].__class__.__name__}: {elapsed_time}")
+                print(f"Device {trainers[i].device}: Time taken for {steps_to_train} steps of {trainers[i].__class__.__name__}: {elapsed_time}")
 
         for step in range(0, num_train_steps, save_every):
             train_models(save_every)
