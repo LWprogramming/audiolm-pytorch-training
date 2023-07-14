@@ -386,6 +386,9 @@ def train_everything(profiler=None):
                 profiler.step()
             # TODO: do we need to wait for everyone here or can we just get away with waiting on main only?
             if semantic_trainer.accelerator.is_main_process:
+                semantic_trainer.accelerator.is_main_process.wait_for_everyone()
+            print(f"all clear from semantic trainer on device {semantic_trainer.device}")
+            if semantic_trainer.accelerator.is_main_process:
                 # they should all be main process if this is called right?
                 assert coarse_trainer.accelerator.is_main_process and fine_trainer.accelerator.is_main_process
                 print(f"semantic_trainer on device {semantic_trainer.device}") # I'm guessing this is either first or last, i.e. 0 or 7
