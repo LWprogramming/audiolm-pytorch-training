@@ -360,6 +360,7 @@ def train_everything(profiler=None):
         def train_models(steps_to_train):
             # Due to preemption in Slurm, we might see a checkpoint for one model but not the others. Since our parallel training trains models in a round-robin fashion, we figure out the first trainer for which we *don't* have a checkpoint and train that one.
             # This is a bit hacky, but it works.
+            print(f"deciding which model to train. semantic_trainer.steps: {semantic_trainer.steps}, coarse_trainer.steps: {coarse_trainer.steps}, fine_trainer.steps: {fine_trainer.steps}. devices are {semantic_trainer.device}, {coarse_trainer.device}, {fine_trainer.device} for semantic, coarse, and fine respectively")
             if semantic_trainer.steps == 0:
                 trainer_index = 0
             elif coarse_trainer.steps < semantic_trainer.steps:
@@ -369,6 +370,7 @@ def train_everything(profiler=None):
             else:
                 trainer_index = 0 # all the models have an equal train step-- start from the beginning
             trainers = [semantic_trainer, coarse_trainer, fine_trainer]
+            print(f"training model {trainer_index} on device {trainers[trainer_index].device}")
             for i in range(trainer_index, len(trainers)):
                 start_time = datetime.datetime.now()
                 for _ in range(steps_to_train + 1):
@@ -406,6 +408,7 @@ def train_everything(profiler=None):
             coarse_trainer.accelerator.wait_for_everyone()
             print(f"fine_trainer on device {fine_trainer.device} arrived here")
             fine_trainer.accelerator.wait_for_everyone()
+            print(f"all waits complete.")
     else:
         # non parallel training
         assert profiler is None, "profiling not implemented for training NOT in parallel"
