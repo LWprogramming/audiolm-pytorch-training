@@ -126,7 +126,10 @@ class CocochoralesCustomDataset(Dataset):
             data_harmony_at_curr_hz = rearrange(data_harmony_at_curr_hz, '1 ... -> ...')
             print(f"data_melody.shape={data_melody_at_curr_hz.shape} and data_harmony.shape={data_harmony_at_curr_hz.shape} with silence_length_samples={silence_num_samples_at_curr_hz}")
 
-            output.append(torch.cat((data_melody_at_curr_hz, torch.zeros(1, silence_num_samples_at_curr_hz), data_harmony_at_curr_hz), dim=1))
+            print(f"data_melody_at_curr_hz.shape={data_melody_at_curr_hz.shape}")
+            to_append = torch.cat((data_melody_at_curr_hz, torch.zeros(1, silence_num_samples_at_curr_hz), data_harmony_at_curr_hz), dim=1).float()
+            print(f"to_append.shape={to_append.shape}")
+            output.append(to_append)
             print(f"output[-1].shape={output[-1].shape}")
         # cast from list to tuple
 
@@ -174,6 +177,90 @@ def get_dataloader(ds, pad_to_longest = True, **kwargs):
     collate_fn = pad_to_longest_fn if pad_to_longest else curtail_to_shortest_collate
     return DataLoader(ds, collate_fn = collate_fn, **kwargs)
 
+class SoundDataset(Dataset):
+    def __init__(
+        self,
+        folder,
+        exts = ['flac', 'wav', 'mp3', 'webm'],
+        max_length = None,
+        target_sample_hz = None,
+        # seq_len_multiple_of = None
+    ):
+        super().__init__()
+        path = Path(folder)
+        assert path.exists(), 'folder does not exist'
+
+        files = [file for ext in exts for file in path.glob(f'**/*.{ext}')]
+        assert len(files) > 0, 'no sound files found'
+
+        self.files = files
+
+        self.target_sample_hz = cast_tuple(target_sample_hz)
+        num_outputs = len(self.target_sample_hz)
+
+        self.max_length = cast_tuple(max_length, num_outputs)
+        # self.seq_len_multiple_of = cast_tuple(seq_len_multiple_of, num_outputs)
+
+        # assert len(self.max_length) == len(self.target_sample_hz) # == len(self.seq_len_multiple_of)
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, idx):
+        file = self.files[idx]
+
+        data, sample_hz = torchaudio.load(file)
+
+        assert data.numel() > 0, f'one of your audio file ({file}) is empty. please remove it from your folder'
+
+        if data.shape[0] > 1:
+            # the audio has more than 1 channel, convert to mono
+            data = torch.mean(data, dim=0).unsqueeze(0)
+
+        num_outputs = len(self.target_sample_hz)
+        data = cast_tuple(data, num_outputs)
+
+        # resample if target_sample_hz is not None in the tuple
+        data_tuple = tuple((resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in zip(data, self.target_sample_hz))
+
+        output = []
+
+        # process each of the data resample at different frequencies individually
+
+        for data, max_length in zip(data_tuple, self.max_length):
+            audio_length = data.size(1)
+
+            # pad or curtail
+
+            if audio_length > max_length:
+                max_start = audio_length - max_length
+                start = torch.randint(0, max_start, (1, ))
+                data = data[:, start:start + max_length]
+
+            else:
+                data = F.pad(data, (0, max_length - audio_length), 'constant')
+
+            data = rearrange(data, '1 ... -> ...')
+
+            if max_length is not None:
+                data = data[:max_length]
+
+            # if seq_len_multiple_of is not None:
+            #     data = curtail_to_multiple(data, seq_len_multiple_of)
+
+            output.append(data.float())
+
+        # cast from list to tuple
+
+        output = tuple(output)
+
+        # return only one audio, if only one target resample freq
+
+        if num_outputs == 1:
+            return output[0]
+
+        return output
+
 if __name__ == "__main__":
     print("hello")
     dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1', target_sample_hz=16000, max_length=16000*30)
@@ -184,90 +271,4 @@ if __name__ == "__main__":
 
 #
 #
-# """
-# class SoundDataset(Dataset):
-#     @beartype
-#     def __init__(
-#         self,
-#         folder,
-#         exts = ['flac', 'wav', 'mp3', 'webm'],
-#         max_length: OptionalIntOrTupleInt = None,
-#         target_sample_hz: OptionalIntOrTupleInt = None,
-#         seq_len_multiple_of: OptionalIntOrTupleInt = None
-#     ):
-#         super().__init__()
-#         path = Path(folder)
-#         assert path.exists(), 'folder does not exist'
-#
-#         files = [file for ext in exts for file in path.glob(f'**/*.{ext}')]
-#         assert len(files) > 0, 'no sound files found'
-#
-#         self.files = files
-#
-#         self.target_sample_hz = cast_tuple(target_sample_hz)
-#         num_outputs = len(self.target_sample_hz)
-#
-#         self.max_length = cast_tuple(max_length, num_outputs)
-#         self.seq_len_multiple_of = cast_tuple(seq_len_multiple_of, num_outputs)
-#
-#         assert len(self.max_length) == len(self.target_sample_hz) == len(self.seq_len_multiple_of)
-#
-#     def __len__(self):
-#         return len(self.files)
-#
-#     def __getitem__(self, idx):
-#         file = self.files[idx]
-#
-#         data, sample_hz = torchaudio.load(file)
-#
-#         assert data.numel() > 0, f'one of your audio file ({file}) is empty. please remove it from your folder'
-#
-#         if data.shape[0] > 1:
-#             # the audio has more than 1 channel, convert to mono
-#             data = torch.mean(data, dim=0).unsqueeze(0)
-#
-#         num_outputs = len(self.target_sample_hz)
-#         data = cast_tuple(data, num_outputs)
-#
-#         # resample if target_sample_hz is not None in the tuple
-#
-#         data_tuple = tuple((resample(d, sample_hz, target_sample_hz) if exists(target_sample_hz) else d) for d, target_sample_hz in zip(data, self.target_sample_hz))
-#
-#         output = []
-#
-#         # process each of the data resample at different frequencies individually
-#
-#         for data, max_length, seq_len_multiple_of in zip(data_tuple, self.max_length, self.seq_len_multiple_of):
-#             audio_length = data.size(1)
-#
-#             # pad or curtail
-#
-#             if audio_length > max_length:
-#                 max_start = audio_length - max_length
-#                 start = torch.randint(0, max_start, (1, ))
-#                 data = data[:, start:start + max_length]
-#
-#             else:
-#                 data = F.pad(data, (0, max_length - audio_length), 'constant')
-#
-#             data = rearrange(data, '1 ... -> ...')
-#
-#             if exists(max_length):
-#                 data = data[:max_length]
-#
-#             if exists(seq_len_multiple_of):
-#                 data = curtail_to_multiple(data, seq_len_multiple_of)
-#
-#             output.append(data.float())
-#
-#         # cast from list to tuple
-#
-#         output = tuple(output)
-#
-#         # return only one audio, if only one target resample freq
-#
-#         if num_outputs == 1:
-#             return output[0]
-#
-#         return output
-# """
+
