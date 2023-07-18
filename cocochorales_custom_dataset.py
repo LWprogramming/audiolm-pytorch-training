@@ -127,8 +127,8 @@ class CocochoralesCustomDataset(Dataset):
             print(f"data_melody.shape={data_melody_at_curr_hz.shape} and data_harmony.shape={data_harmony_at_curr_hz.shape} with silence_length_samples={silence_num_samples_at_curr_hz}")
 
             print(f"data_melody_at_curr_hz.shape={data_melody_at_curr_hz.shape}")
-            to_append = torch.cat((data_melody_at_curr_hz, torch.zeros(1, silence_num_samples_at_curr_hz), data_harmony_at_curr_hz), dim=1).float()
-            print(f"to_append.shape={to_append.shape}")
+            to_append = torch.cat((data_melody_at_curr_hz, torch.zeros(silence_num_samples_at_curr_hz), data_harmony_at_curr_hz), dim=0).float()
+            print(f"to_append.shape={to_append.shape}") # should be 1-dimensional, just the length of the audio in samples.
             output.append(to_append)
             print(f"output[-1].shape={output[-1].shape}")
         # cast from list to tuple
