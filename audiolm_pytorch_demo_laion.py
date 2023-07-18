@@ -83,8 +83,8 @@ elif args.run_mode == "cocochorales_overfit_1_second":
     # resample the given sample to 24kHz to work with encodec and then trim it so we take only the first second of audio, so the transformer actually only sees the same data every single time
     dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/many_identical_copies_of_cocochorales_single_sample_resampled_24kHz_trimmed_first_second"
-    num_train_steps = 5000
-    save_every = 1000
+    num_train_steps = 501
+    save_every = 100
     batch_size = 1
     grad_accum_every = 1
     data_max_length = 24000
