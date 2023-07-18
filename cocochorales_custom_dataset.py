@@ -29,10 +29,10 @@ class CocochoralesCustomDataset(Dataset):
     This code is closely coupled to the cocochorales_downloader.sh script, which modifies the format of the data in each track. Each track folder (after the downloader script is done) contains 4 wav files.
 
     For example, the string_track000001 folder contains the following files:
-    |-- 0_violin.wav
     |-- 1_violin.wav
-    |-- 2_viola.wav
-    |-- 3_cello.wav
+    |-- 2_violin.wav
+    |-- 3_viola.wav
+    |-- 4_cello.wav
     These wav files used to be in the stem_audio subfolder, but the downloader script moves them up one level and cleans out the other files and folders.
 
     The `__getitem__` method processes audio files prefixed with `0_` and `3_`. It trims and aligns the audio data to create a sequence of equal length from both files, separated by a configurable (but default half-second) of silence. This allows transformers to learn harmonies from two parallel parts.
@@ -87,8 +87,8 @@ class CocochoralesCustomDataset(Dataset):
         folder = self.stem_audio_folders[idx]
         print(f"{folder} is the folder")
         print(f"melody files list is {list(folder.glob(f'0_*.wav'))}")
-        melody_file = next(folder.glob(f'0_*.wav')) # should only be one file
-        harmony_file = next(folder.glob(f'3_*.wav'))
+        melody_file = next(folder.glob(f'1_*.wav')) # should only be one file
+        harmony_file = next(folder.glob(f'4_*.wav'))
         print(f"{melody_file} is the melody file")
         data_melody_tuple, sample_hz_melody = self.get_audio_data(melody_file)
         data_harmony_tuple, sample_hz_harmony = self.get_audio_data(harmony_file)
