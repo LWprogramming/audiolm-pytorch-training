@@ -85,8 +85,10 @@ class CocochoralesCustomDataset(Dataset):
 
     def __getitem__(self, idx):
         folder = self.stem_audio_folders[idx]
+        print(f"{folder} is the folder")
         melody_file = folder.glob(f'0_*.wav')
         harmony_file = folder.glob(f'3_*.wav')
+        print(f"{melody_file} is the melody file")
         data_melody_tuple, sample_hz_melody = self.get_audio_data(melody_file)
         data_harmony_tuple, sample_hz_harmony = self.get_audio_data(harmony_file)
 
