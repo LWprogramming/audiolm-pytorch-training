@@ -62,9 +62,9 @@ class CocochoralesCustomDataset(Dataset):
         # assert len(self.max_length) == len(self.target_sample_hz) == len(self.seq_len_multiple_of)
 
         # now calculate the length of the audio from a single source
-        self.silence_length_samples = tuple(int(silence_length_seconds * target_sample_hz) for target_sample_hz in self.target_sample_hz)
+        self.silence_num_samples = tuple(int(silence_length_seconds * target_sample_hz) for target_sample_hz in self.target_sample_hz)
         # assumes everything divides evenly
-        self.num_samples_from_each_track = tuple((max_length - silence_length_samples) // 2 for max_length, silence_length_samples in zip(self.max_length, self.silence_length_samples))
+        self.num_samples_from_each_track = tuple((max_length - silence_length_samples) // 2 for max_length, silence_length_samples in zip(self.max_length, self.silence_num_samples))
 
     def __len__(self):
         return len(self.stem_audio_folders)
@@ -103,25 +103,25 @@ class CocochoralesCustomDataset(Dataset):
 
         # process each of the data resample at different frequencies individually
 
-        for data_melody, data_harmony, num_samples_from_each_track, silence_length_sample_from_each_track in zip(data_melody_tuple, data_harmony_tuple, self.num_samples_from_each_track, self.silence_length_samples):
-            audio_length = data_melody.size(1)
+        for data_melody_curr_hz, data_harmony_curr_hz, num_samples_curr_hz, silence_num_samples_curr_hz in zip(data_melody_tuple, data_harmony_tuple, self.num_samples_from_each_track, self.silence_num_samples):
+            audio_length = data_melody_curr_hz.size(1)
 
             # pad or curtail
 
-            if audio_length > num_samples_from_each_track:
-                max_start = audio_length - num_samples_from_each_track
+            if audio_length > num_samples_curr_hz:
+                max_start = audio_length - num_samples_curr_hz
                 start = torch.randint(0, max_start, (1,))
-                data_melody = data_melody[:, start:start + num_samples_from_each_track]
-                data_harmony = data_harmony[:, start:start + num_samples_from_each_track]
+                data_melody_curr_hz = data_melody_curr_hz[:, start:start + num_samples_curr_hz]
+                data_harmony_curr_hz = data_harmony_curr_hz[:, start:start + num_samples_curr_hz]
             else:
-                data_melody = F.pad(data_melody, (0, num_samples_from_each_track - audio_length), 'constant')
-                data_harmony = F.pad(data_harmony, (0, num_samples_from_each_track - audio_length), 'constant')
+                data_melody_curr_hz = F.pad(data_melody_curr_hz, (0, num_samples_curr_hz - audio_length), 'constant')
+                data_harmony_curr_hz = F.pad(data_harmony_curr_hz, (0, num_samples_curr_hz - audio_length), 'constant')
 
-            data_melody = rearrange(data_melody, '1 ... -> ...')
-            data_harmony = rearrange(data_harmony, '1 ... -> ...')
-            print(f"data_melody.shape={data_melody.shape} and data_harmony.shape={data_harmony.shape} with silence_length_samples={silence_length_sample_from_each_track}")
+            data_melody_curr_hz = rearrange(data_melody_curr_hz, '1 ... -> ...')
+            data_harmony_curr_hz = rearrange(data_harmony_curr_hz, '1 ... -> ...')
+            print(f"data_melody.shape={data_melody_curr_hz.shape} and data_harmony.shape={data_harmony_curr_hz.shape} with silence_length_samples={silence_num_samples_curr_hz}")
 
-            output.append(torch.cat((data_melody, torch.zeros(1, silence_length_sample_from_each_track), data_harmony), dim=1))
+            output.append(torch.cat((data_melody_curr_hz, torch.zeros(1, silence_num_samples_curr_hz), data_harmony_curr_hz), dim=1))
             print(f"output[-1].shape={output[-1].shape}")
         # cast from list to tuple
 
