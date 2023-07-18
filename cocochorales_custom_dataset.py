@@ -38,6 +38,8 @@ class CocochoralesCustomDataset(Dataset):
     These wav files used to be in the stem_audio subfolder, but the downloader script moves them up one level and cleans out the other files and folders.
 
     The `__getitem__` method processes audio files prefixed with `0_` and `3_`. It trims and aligns the audio data to create a sequence of equal length from both files, separated by a configurable (but default half-second) of silence. This allows transformers to learn harmonies from two parallel parts.
+
+    We also trim off the first and last half-second of each file (the audio around the edges of the sound file in the original dataset seem a little sketchy)
     """
     def __init__(self, folder, max_length, target_sample_hz, silence_length_seconds=0.5):
         # intentionally leaving out seq_len_multiple_of which exists in the original AudioLM repo because I don't want to have to deal with it
@@ -72,13 +74,19 @@ class CocochoralesCustomDataset(Dataset):
         return len(self.stem_audio_folders)
 
     def get_audio_data(self, file):
-        # given pathlib glob, return full resampled data and original sample rate
+        # given pathlib glob, return full resampled data and original sample rate after trimming off the first and last half-second as described in the docstring
         data, sample_hz = torchaudio.load(file)
         assert data.numel() > 0, f'one of your audio file ({file}) is empty. please remove it from your folder'
         if data.shape[0] > 1:
             # the audio has more than 1 channel, convert to mono
-            data = torch.mean(data, dim=0).unsqueeze(0)
+            data = torch.mean(data, dim=0).unsqueeze(0) # 1 x samples shape
         num_outputs = len(self.target_sample_hz)
+
+        # trim off the first and last half-second:
+        num_samples_to_trim = int(sample_hz * 0.5)
+        data = data[:, num_samples_to_trim:-num_samples_to_trim]
+
+        # prepare data into tuple so we can resample per target_sample_hz entry
         data = cast_tuple(data, num_outputs)
         # print(f"data shape is {data[0].shape}")
         # resample if target_sample_hz is not None in the tuple
