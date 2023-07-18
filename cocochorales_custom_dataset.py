@@ -226,12 +226,12 @@ class SoundDataset(Dataset):
         output = []
 
         # process each of the data resample at different frequencies individually
-
+        print(f"len data tuple is {len(data_tuple)}")
         for data, max_length in zip(data_tuple, self.max_length):
             audio_length = data.size(1)
 
             # pad or curtail
-
+            print(f"data shape is {data.shape}")
             if audio_length > max_length:
                 max_start = audio_length - max_length
                 start = torch.randint(0, max_start, (1, ))
@@ -247,7 +247,7 @@ class SoundDataset(Dataset):
 
             # if seq_len_multiple_of is not None:
             #     data = curtail_to_multiple(data, seq_len_multiple_of)
-
+            print(f"dat float shape {data.float().shape}")
             output.append(data.float())
 
         # cast from list to tuple
