@@ -78,11 +78,12 @@ class CocochoralesCustomDataset(Dataset):
             data = torch.mean(data, dim=0).unsqueeze(0)
         num_outputs = len(self.target_sample_hz)
         data = cast_tuple(data, num_outputs)
-
+        print(f"data shape is {data[0].shape}")
         # resample if target_sample_hz is not None in the tuple
         data_tuple = tuple(
             (resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in
             zip(data, self.target_sample_hz))
+        print(f"datatuple first shape is {data_tuple[0].shape}")
         return data_tuple, sample_hz
 
     def __getitem__(self, idx):
