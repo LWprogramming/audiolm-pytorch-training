@@ -86,6 +86,7 @@ class CocochoralesCustomDataset(Dataset):
     def __getitem__(self, idx):
         folder = self.stem_audio_folders[idx]
         print(f"{folder} is the folder")
+        print(f"melody files list is {list(folder.glob(f'0_*.wav'))}")
         melody_file = next(folder.glob(f'0_*.wav')) # should only be one file
         harmony_file = next(folder.glob(f'3_*.wav'))
         print(f"{melody_file} is the melody file")
