@@ -266,7 +266,7 @@ if __name__ == "__main__":
     dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1', target_sample_hz=16000, max_length=16000*30)
     dataloader = get_dataloader(dataset, batch_size=1, num_workers=0, shuffle=True)
     for batch in dataloader:
-        print(batch.shape)
+        print(f"len batch is {len(batch)} and first elemtn has shape {batch[0].shape}")
 
 
 #
