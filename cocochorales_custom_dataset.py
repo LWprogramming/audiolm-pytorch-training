@@ -91,6 +91,8 @@ class CocochoralesCustomDataset(Dataset):
         harmony_file = next(folder.glob(f'4_*.wav'))
         print(f"{melody_file} is the melody file")
         data_melody_tuple, sample_hz_melody = self.get_audio_data(melody_file)
+        print(f"melody has {len(data_melody_tuple)} melodies and the shape of each is {[d.shape for d in data_melody_tuple]}")
+        print(f"sample_hz_melody is {sample_hz_melody}")
         data_harmony_tuple, sample_hz_harmony = self.get_audio_data(harmony_file)
 
         # probably 16kHz
