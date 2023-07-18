@@ -17,6 +17,8 @@ from torch.utils.data import Dataset, DataLoader
 
 from einops import rearrange
 
+# this code is heavily heavily modeled after https://github.com/lucidrains/audiolm-pytorch/blob/main/audiolm_pytorch/data.py
+
 def cast_tuple(val, length = 1):
     return val if isinstance(val, tuple) else ((val,) * length)
 
