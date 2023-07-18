@@ -55,7 +55,7 @@ class CocochoralesCustomDataset(Dataset):
 		assert max_length is not None, "max_length must be specified"
 		self.max_length = cast_tuple(max_length, num_outputs)
 		min_seconds = 30
-		for i in num_outputs:
+		for i in range(num_outputs):
 			# ensure max_length is long enough so we can learn accompaniment over a long time range
 			assert self.max_length[i] >= min_seconds * self.target_sample_hz[i], f"max_length must be at least {min_seconds} seconds * target_sample_hz"
 		# self.seq_len_multiple_of = cast_tuple(seq_len_multiple_of, num_outputs)
