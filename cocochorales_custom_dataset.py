@@ -77,6 +77,9 @@ class CocochoralesCustomDataset(Dataset):
             # the audio has more than 1 channel, convert to mono
             data = torch.mean(data, dim=0).unsqueeze(0)
         print(f"in function shape of data is {data.shape}")
+        num_outputs = len(self.target_sample_hz)
+        data = cast_tuple(data, num_outputs)
+
         # resample if target_sample_hz is not None in the tuple
         data_tuple = tuple(
             (resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in
