@@ -81,6 +81,7 @@ class CocochoralesCustomDataset(Dataset):
         data_tuple = tuple(
             (resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in
             zip(data, self.target_sample_hz))
+        print(f"data tuple length is {len(data_tuple)} and first element is shape {data_tuple[0].shape}")
         return data_tuple, sample_hz
 
     def __getitem__(self, idx):
@@ -92,7 +93,6 @@ class CocochoralesCustomDataset(Dataset):
         print(f"{melody_file} is the melody file")
         data_melody_tuple, sample_hz_melody = self.get_audio_data(melody_file)
         print(f"melody has {len(data_melody_tuple)} melodies and the shape of each is {[d.shape for d in data_melody_tuple]}")
-        print(f"sample_hz_melody is {sample_hz_melody}")
         data_harmony_tuple, sample_hz_harmony = self.get_audio_data(harmony_file)
 
         # probably 16kHz
