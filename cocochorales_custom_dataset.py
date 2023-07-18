@@ -78,12 +78,12 @@ class CocochoralesCustomDataset(Dataset):
             data = torch.mean(data, dim=0).unsqueeze(0)
         num_outputs = len(self.target_sample_hz)
         data = cast_tuple(data, num_outputs)
-        print(f"data shape is {data[0].shape}")
+        # print(f"data shape is {data[0].shape}")
         # resample if target_sample_hz is not None in the tuple
         data_tuple = tuple(
             (resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in
             zip(data, self.target_sample_hz))
-        print(f"datatuple first shape is {data_tuple[0].shape}")
+        # print(f"datatuple first shape is {data_tuple[0].shape}")
         return data_tuple, sample_hz
 
     def __getitem__(self, idx):
@@ -112,25 +112,25 @@ class CocochoralesCustomDataset(Dataset):
             if audio_length > num_samples_at_curr_hz:
                 max_start = audio_length - num_samples_at_curr_hz
                 start = torch.randint(0, max_start, (1,))
-                print("data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                # print("data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
                 data_melody_at_curr_hz = data_melody_at_curr_hz[:, start:start + num_samples_at_curr_hz]
-                print("if data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                # print("if data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
                 data_harmony_at_curr_hz = data_harmony_at_curr_hz[:, start:start + num_samples_at_curr_hz]
             else:
-                print("data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                # print("data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
                 data_melody_at_curr_hz = F.pad(data_melody_at_curr_hz, (0, num_samples_at_curr_hz - audio_length), 'constant')
-                print("else data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                # print("else data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
                 data_harmony_at_curr_hz = F.pad(data_harmony_at_curr_hz, (0, num_samples_at_curr_hz - audio_length), 'constant')
 
             data_melody_at_curr_hz = rearrange(data_melody_at_curr_hz, '1 ... -> ...')
             data_harmony_at_curr_hz = rearrange(data_harmony_at_curr_hz, '1 ... -> ...')
-            print(f"data_melody.shape={data_melody_at_curr_hz.shape} and data_harmony.shape={data_harmony_at_curr_hz.shape} with silence_length_samples={silence_num_samples_at_curr_hz}")
+            # print(f"data_melody.shape={data_melody_at_curr_hz.shape} and data_harmony.shape={data_harmony_at_curr_hz.shape} with silence_length_samples={silence_num_samples_at_curr_hz}")
 
-            print(f"data_melody_at_curr_hz.shape={data_melody_at_curr_hz.shape}")
+            # print(f"data_melody_at_curr_hz.shape={data_melody_at_curr_hz.shape}")
             to_append = torch.cat((data_melody_at_curr_hz, torch.zeros(silence_num_samples_at_curr_hz), data_harmony_at_curr_hz), dim=0).float()
-            print(f"to_append.shape={to_append.shape}") # should be 1-dimensional, just the length of the audio in samples.
+            # print(f"to_append.shape={to_append.shape}") # should be 1-dimensional, just the length of the audio in samples.
             output.append(to_append)
-            print(f"output[-1].shape={output[-1].shape}")
+            # print(f"output[-1].shape={output[-1].shape}")
         # cast from list to tuple
 
         output = tuple(output)
@@ -226,12 +226,12 @@ class SoundDataset(Dataset):
         output = []
 
         # process each of the data resample at different frequencies individually
-        print(f"len data tuple is {len(data_tuple)}")
+        # print(f"len data tuple is {len(data_tuple)}")
         for data, max_length in zip(data_tuple, self.max_length):
             audio_length = data.size(1)
 
             # pad or curtail
-            print(f"data shape is {data.shape}")
+            # print(f"data shape is {data.shape}")
             if audio_length > max_length:
                 max_start = audio_length - max_length
                 start = torch.randint(0, max_start, (1, ))
@@ -247,7 +247,7 @@ class SoundDataset(Dataset):
 
             # if seq_len_multiple_of is not None:
             #     data = curtail_to_multiple(data, seq_len_multiple_of)
-            print(f"dat float shape {data.float().shape}")
+            # print(f"dat float shape {data.float().shape}")
             output.append(data.float())
 
         # cast from list to tuple
@@ -262,11 +262,10 @@ class SoundDataset(Dataset):
         return output
 
 if __name__ == "__main__":
-    print("hello")
     dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1', target_sample_hz=16000, max_length=16000*30)
     dataloader = get_dataloader(dataset, batch_size=1, num_workers=0, shuffle=True)
     for batch in dataloader:
-        print(f"len batch is {len(batch)} and first elemtn has shape {batch[0].shape}")
+        print(f"len batch is {len(batch)} and first elemtn has shape {batch[0].shape}") # one element of shape 1 x num_samples
 
 
 #
