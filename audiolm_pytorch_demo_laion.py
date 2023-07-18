@@ -381,8 +381,6 @@ def train_everything(profiler=None):
                 end_time = datetime.datetime.now()
                 elapsed_time = end_time - start_time
                 print(f"Device {trainers[i].device}: Time taken for {steps_to_train} steps of {trainers[i].__class__.__name__}: {elapsed_time}")
-                semantic_trainer.accelerator.wait_for_everyone()
-                print("does waiting for everyone in semantic trainer work? why?")
 
         for step in range(0, num_train_steps, save_every):
             train_models(save_every)
