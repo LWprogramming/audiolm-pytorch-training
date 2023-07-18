@@ -76,7 +76,6 @@ class CocochoralesCustomDataset(Dataset):
         if data.shape[0] > 1:
             # the audio has more than 1 channel, convert to mono
             data = torch.mean(data, dim=0).unsqueeze(0)
-        print(f"in function shape of data is {data.shape}")
         num_outputs = len(self.target_sample_hz)
         data = cast_tuple(data, num_outputs)
 
@@ -84,18 +83,13 @@ class CocochoralesCustomDataset(Dataset):
         data_tuple = tuple(
             (resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in
             zip(data, self.target_sample_hz))
-        print(f"data tuple length is {len(data_tuple)} and first element is shape {data_tuple[0].shape}")
         return data_tuple, sample_hz
 
     def __getitem__(self, idx):
         folder = self.stem_audio_folders[idx]
-        print(f"{folder} is the folder")
-        print(f"melody files list is {list(folder.glob(f'0_*.wav'))}")
         melody_file = next(folder.glob(f'1_*.wav')) # should only be one file
         harmony_file = next(folder.glob(f'4_*.wav'))
-        print(f"{melody_file} is the melody file")
         data_melody_tuple, sample_hz_melody = self.get_audio_data(melody_file)
-        print(f"melody has {len(data_melody_tuple)} melodies and the shape of each is {[d.shape for d in data_melody_tuple]}")
         data_harmony_tuple, sample_hz_harmony = self.get_audio_data(harmony_file)
 
         # probably 16kHz
@@ -109,7 +103,7 @@ class CocochoralesCustomDataset(Dataset):
 
         # process each of the data resample at different frequencies individually
 
-        for data_melody, data_harmony, num_samples_from_each_track in zip(data_melody_tuple, data_harmony_tuple, self.num_samples_from_each_track):
+        for data_melody, data_harmony, num_samples_from_each_track, silence_length_sample_from_each_track in zip(data_melody_tuple, data_harmony_tuple, self.num_samples_from_each_track, self.silence_length_samples):
             audio_length = data_melody.size(1)
 
             # pad or curtail
@@ -119,16 +113,15 @@ class CocochoralesCustomDataset(Dataset):
                 start = torch.randint(0, max_start, (1,))
                 data_melody = data_melody[:, start:start + num_samples_from_each_track]
                 data_harmony = data_harmony[:, start:start + num_samples_from_each_track]
-
             else:
                 data_melody = F.pad(data_melody, (0, num_samples_from_each_track - audio_length), 'constant')
                 data_harmony = F.pad(data_harmony, (0, num_samples_from_each_track - audio_length), 'constant')
 
             data_melody = rearrange(data_melody, '1 ... -> ...')
             data_harmony = rearrange(data_harmony, '1 ... -> ...')
-            print(f"data_melody.shape={data_melody.shape} and data_harmony.shape={data_harmony.shape} with silence_length_samples={self.silence_length_samples}")
+            print(f"data_melody.shape={data_melody.shape} and data_harmony.shape={data_harmony.shape} with silence_length_samples={silence_length_sample_from_each_track}")
 
-            output.append(torch.cat((data_melody, torch.zeros(1, self.silence_length_samples), data_harmony), dim=1))
+            output.append(torch.cat((data_melody, torch.zeros(1, silence_length_sample_from_each_track), data_harmony), dim=1))
             print(f"output[-1].shape={output[-1].shape}")
         # cast from list to tuple
 
