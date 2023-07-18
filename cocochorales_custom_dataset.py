@@ -44,7 +44,7 @@ class CocochoralesCustomDataset(Dataset):
 		assert path.exists(), 'folder does not exist'
 
 		# files = [file for ext in exts for file in path.glob(f'**/*.{ext}')]
-		stem_audio_folders = [file for file in path.glob(f'**/**track**')]
+		stem_audio_folders = [file for file in path.glob(f'**/*track*')]
 		assert len(stem_audio_folders) > 0, 'no sound files found'
 
 		self.stem_audio_folders = stem_audio_folders
