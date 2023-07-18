@@ -25,13 +25,15 @@ class CocochoralesCustomDataset(Dataset):
 
 	Each track has its own unique ID. The naming of the tracks follows <ensemble>_track<id>. Where <ensemble> is one of four ensembles: string, brass, woodwind, random. The ID is a 6-digit number, from 000001 to 240000, where 000001-192000 are training set, 192001-216000 are valid set, and 216001-240000 are test set.
 
-	We take the stems_audio folder, which looks like
 
- 	stems_audio/
+	This code is closely coupled to the cocochorales_downloader.sh script, which modifies the format of the data in each track. Each track folder (after the downloader script is done) contains 4 wav files.
+
+	For example, the string_track000001 folder contains the following files:
 	|-- 0_violin.wav
     |-- 1_violin.wav
     |-- 2_viola.wav
     |-- 3_cello.wav
+    These wav files used to be in the stem_audio subfolder, but the downloader script moves them up one level and cleans out the other files and folders.
 
     The `__getitem__` method processes audio files prefixed with `0_` and `3_`. It trims and aligns the audio data to create a sequence of equal length from both files, separated by a configurable (but default half-second) of silence. This allows transformers to learn harmonies from two parallel parts.
 	"""
@@ -42,7 +44,7 @@ class CocochoralesCustomDataset(Dataset):
 		assert path.exists(), 'folder does not exist'
 
 		# files = [file for ext in exts for file in path.glob(f'**/*.{ext}')]
-		stem_audio_folders = [file for file in path.glob(f'**/stems_audio')]
+		stem_audio_folders = [file for file in path.glob(f'**/**track**')]
 		assert len(stem_audio_folders) > 0, 'no sound files found'
 
 		self.stem_audio_folders = stem_audio_folders
@@ -168,7 +170,7 @@ def get_dataloader(ds, pad_to_longest = True, **kwargs):
 
 if __name__ == "__main__":
 	print("hello")
-	dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1/string_track000001', target_sample_hz=16000, max_length=16000*30)
+	dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1', target_sample_hz=16000, max_length=16000*30)
 	dataloader = get_dataloader(dataset, batch_size=1, num_workers=0, shuffle=True)
 	for batch in dataloader:
 		print(batch.shape)
