@@ -104,25 +104,29 @@ class CocochoralesCustomDataset(Dataset):
 
         # process each of the data resample at different frequencies individually
 
-        for data_melody_curr_hz, data_harmony_curr_hz, num_samples_curr_hz, silence_num_samples_curr_hz in zip(data_melody_tuple, data_harmony_tuple, self.num_samples_from_each_track, self.silence_num_samples):
-            audio_length = data_melody_curr_hz.size(1)
+        for data_melody_at_curr_hz, data_harmony_at_curr_hz, num_samples_at_curr_hz, silence_num_samples_at_curr_hz in zip(data_melody_tuple, data_harmony_tuple, self.num_samples_from_each_track, self.silence_num_samples):
+            audio_length = data_melody_at_curr_hz.size(1)
 
             # pad or curtail
 
-            if audio_length > num_samples_curr_hz:
-                max_start = audio_length - num_samples_curr_hz
+            if audio_length > num_samples_at_curr_hz:
+                max_start = audio_length - num_samples_at_curr_hz
                 start = torch.randint(0, max_start, (1,))
-                data_melody_curr_hz = data_melody_curr_hz[:, start:start + num_samples_curr_hz]
-                data_harmony_curr_hz = data_harmony_curr_hz[:, start:start + num_samples_curr_hz]
+                print("data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                data_melody_at_curr_hz = data_melody_at_curr_hz[:, start:start + num_samples_at_curr_hz]
+                print("if data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                data_harmony_at_curr_hz = data_harmony_at_curr_hz[:, start:start + num_samples_at_curr_hz]
             else:
-                data_melody_curr_hz = F.pad(data_melody_curr_hz, (0, num_samples_curr_hz - audio_length), 'constant')
-                data_harmony_curr_hz = F.pad(data_harmony_curr_hz, (0, num_samples_curr_hz - audio_length), 'constant')
+                print("data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                data_melody_at_curr_hz = F.pad(data_melody_at_curr_hz, (0, num_samples_at_curr_hz - audio_length), 'constant')
+                print("else data_melody_at_curr_hz shape is ", data_melody_at_curr_hz.shape)
+                data_harmony_at_curr_hz = F.pad(data_harmony_at_curr_hz, (0, num_samples_at_curr_hz - audio_length), 'constant')
 
-            data_melody_curr_hz = rearrange(data_melody_curr_hz, '1 ... -> ...')
-            data_harmony_curr_hz = rearrange(data_harmony_curr_hz, '1 ... -> ...')
-            print(f"data_melody.shape={data_melody_curr_hz.shape} and data_harmony.shape={data_harmony_curr_hz.shape} with silence_length_samples={silence_num_samples_curr_hz}")
+            data_melody_at_curr_hz = rearrange(data_melody_at_curr_hz, '1 ... -> ...')
+            data_harmony_at_curr_hz = rearrange(data_harmony_at_curr_hz, '1 ... -> ...')
+            print(f"data_melody.shape={data_melody_at_curr_hz.shape} and data_harmony.shape={data_harmony_at_curr_hz.shape} with silence_length_samples={silence_num_samples_at_curr_hz}")
 
-            output.append(torch.cat((data_melody_curr_hz, torch.zeros(1, silence_num_samples_curr_hz), data_harmony_curr_hz), dim=1))
+            output.append(torch.cat((data_melody_at_curr_hz, torch.zeros(1, silence_num_samples_at_curr_hz), data_harmony_at_curr_hz), dim=1))
             print(f"output[-1].shape={output[-1].shape}")
         # cast from list to tuple
 
