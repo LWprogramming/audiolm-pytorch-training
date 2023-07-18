@@ -1,7 +1,24 @@
-from torch.utils.data import Dataset
 from pathlib import Path
+from functools import partial, wraps
+
+from beartype import beartype
+from beartype.typing import Tuple, Union, Optional
+from beartype.door import is_bearable
+
+import torchaudio
 from torchaudio.functional import resample
 
+import torch
+import torch.nn.functional as F
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import Dataset, DataLoader
+
+# from audiolm_pytorch.utils import curtail_to_multiple
+
+from einops import rearrange
+
+def cast_tuple(val, length = 1):
+    return val if isinstance(val, tuple) else ((val,) * length)
 
 class CocochoralesCustomDataset(Dataset):
 	"""Copied from Cocochorales documentation here: https://github.com/lukewys/chamber-ensemble-generator/blob/a8db78a49661ea9d72341bef61fff9376696afa4/data_format.md
@@ -56,11 +73,11 @@ class CocochoralesCustomDataset(Dataset):
 		assert data.numel() > 0, f'one of your audio file ({file}) is empty. please remove it from your folder'
 		if data.shape[0] > 1:
 			# the audio has more than 1 channel, convert to mono
-			data = torch.mean(data_melody, dim=0, keepdim=True)
+			data = torch.mean(data, dim=0, keepdim=True)
 
 		# resample if target_sample_hz is not None in the tuple
 		data_tuple = tuple(
-			(resample(d, sample_hz, target_sample_hz) if exists(target_sample_hz) else d) for d, target_sample_hz in
+			(resample(d, sample_hz, target_sample_hz) if target_sample_hz is not None else d) for d, target_sample_hz in
 			zip(data, self.target_sample_hz))
 		return data_tuple, sample_hz
 
@@ -113,6 +130,48 @@ class CocochoralesCustomDataset(Dataset):
 			return output[0]
 
 		return output
+def collate_one_or_multiple_tensors(fn):
+    @wraps(fn)
+    def inner(data):
+        is_one_data = not isinstance(data[0], tuple)
+
+        if is_one_data:
+            data = torch.stack(data)
+            return (data,)
+
+        outputs = []
+        for datum in zip(*data):
+            if is_bearable(datum, Tuple[str, ...]):
+                output = list(datum)
+            else:
+                output = fn(datum)
+
+            outputs.append(output)
+
+        return tuple(outputs)
+
+    return inner
+
+@collate_one_or_multiple_tensors
+def curtail_to_shortest_collate(data):
+    min_len = min(*[datum.shape[0] for datum in data])
+    data = [datum[:min_len] for datum in data]
+    return torch.stack(data)
+
+@collate_one_or_multiple_tensors
+def pad_to_longest_fn(data):
+    return pad_sequence(data, batch_first = True)
+
+def get_dataloader(ds, pad_to_longest = True, **kwargs):
+    collate_fn = pad_to_longest_fn if pad_to_longest else curtail_to_shortest_collate
+    return DataLoader(ds, collate_fn = collate_fn, **kwargs)
+
+if __name__ == "__main__":
+	print("hello")
+	dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1/string_track000001', target_sample_hz=16000, max_length=16000*30)
+	dataloader = get_dataloader(dataset, batch_size=1, num_workers=0, shuffle=True)
+	for batch in dataloader:
+		print(batch.shape)
 
 
 #
