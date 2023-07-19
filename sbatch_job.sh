@@ -27,6 +27,9 @@ while getopts "r:p:s:" opt; do
     s)
       POTENTIAL_ALTERNATE_SLURM_JOB_ID=$OPTARG
       ;;
+    c)
+      CHECKPOINT_SLURM_JOB_ID=$OPTARG
+      ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
       exit 1
@@ -39,7 +42,10 @@ while getopts "r:p:s:" opt; do
 done
 shift $((OPTIND -1))
 
+# OVERRIDABLE_SLURM_JOB_ID decides whether to use an old slurm job's training script
 OVERRIDABLE_SLURM_JOB_ID=${POTENTIAL_ALTERNATE_SLURM_JOB_ID:-$SLURM_JOB_ID}  # use this job's slurm job id by default, but allow overriding it with a custom value
+# CHECKPOINT_SLURM_JOB_ID decides whether to use an old slurm job's checkpoint
+CHECKPOINT_SLURM_JOB_ID=${CHECKPOINT_SLURM_JOB_ID:-$SLURM_JOB_ID}
 
 # Sometimes slurm jobs get pre-empted. If this ends up happening, we want to have two things recorded: the current training script, so we can properly restart training (in case there were breaking changes previously made). It'd take a good bit more effort to save a separate audiolm_pytorch version for each run, while the API for that doesn't change much, so I'm going to skip that for now.
 # See also https://twitter.com/miraculous_cake/status/1676003814372151297
@@ -59,9 +65,9 @@ echo "with profiling: " $WITH_PROFILING
 echo "slurm job id to actually use: " $OVERRIDABLE_SLURM_JOB_ID
 
 # Transformers need to be trained separately, see: https://github.com/lucidrains/audiolm-pytorch/issues/209#issuecomment-1640777646
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --train_or_eval train_semantic
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --train_or_eval train_coarse
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --train_or_eval train_fine
+accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_semantic
+accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_coarse
+accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_fine
 
 # evaluate separately
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $OVERRIDABLE_SLURM_JOB_ID --train_or_eval evaluate
+accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval evaluate
