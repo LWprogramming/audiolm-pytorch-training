@@ -356,16 +356,10 @@ def train(profiler=None):
     # TODO: see: https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html#using-profiler-to-analyze-long-running-jobs for more info on profiler.step() and schedules. We use the second save_every steps instead of the first in case there's any weird overhead to setting things up.
     # if profiler is not None:
     #     profiler.step()
-    print(f"hi. args train or eval is {args.train_or_eval}")
     if args.train_or_eval == "evaluate":
-        print(f"entered evaluate branch")
         step = semantic_trainer.steps.item()
-        print(f"semantic steps {semantic_trainer.steps.item()}")
         # assert semantic_trainer.steps.item() == coarse_trainer.steps.item() and coarse_trainer.steps.item() == fine_trainer.steps.item(), "all three trainers should have the same number of steps when fully trained"
-        print(f"coarse trainer device {coarse_trainer.device}")
-        print(f"semantic trainer is main {semantic_trainer.is_main}")
         if semantic_trainer.is_main:
-            print(f"corase trainer device {coarse_trainer.device}")
             get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
         return
     elif args.train_or_eval == "train_semantic":
