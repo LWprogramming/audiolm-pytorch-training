@@ -237,99 +237,111 @@ wav2vec = HubertWithKmeans(
     kmeans_path = f"{prefix}/{hubert_quantizer}"
 )
 
-semantic_transformer = SemanticTransformer(
-    num_semantic_tokens = wav2vec.codebook_size,
-    dim = 1024,
-    depth = 6
-).cuda()
+def get_semantic_transformer():
+    semantic_transformer = SemanticTransformer(
+        num_semantic_tokens = wav2vec.codebook_size,
+        dim = 1024,
+        depth = 6
+    ).cuda()
+    return semantic_transformer
 
-semantic_trainer = SemanticTransformerTrainer(
-    transformer = semantic_transformer,
-    wav2vec = wav2vec,
-    dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
-    folder = dataset_folder,
-    batch_size = batch_size,
-    grad_accum_every = grad_accum_every,
-    data_max_length = data_max_length,
-    data_max_length_seconds = data_max_length_seconds,
-    num_train_steps = num_train_steps,
-    save_results_every = save_every,
-    save_model_every = save_every,
-    results_folder = f"{prefix}/semantic_results_{results_folder_suffix}",
-    force_clear_prev_results = False,
-)
+def get_semantic_trainer(semantic_transformer):
+    semantic_trainer = SemanticTransformerTrainer(
+        transformer = semantic_transformer,
+        wav2vec = wav2vec,
+        dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
+        folder = dataset_folder,
+        batch_size = batch_size,
+        grad_accum_every = grad_accum_every,
+        data_max_length = data_max_length,
+        data_max_length_seconds = data_max_length_seconds,
+        num_train_steps = num_train_steps,
+        save_results_every = save_every,
+        save_model_every = save_every,
+        results_folder = f"{prefix}/semantic_results_{results_folder_suffix}",
+        force_clear_prev_results = False,
+    )
 
-semantic_ckpt = get_potential_checkpoint_path("semantic", semantic_trainer, prefix, results_folder_suffix)
-print(f"loading semantic checkpoint {semantic_ckpt}")
-if semantic_ckpt is not None:
-    semantic_trainer.load(semantic_ckpt)
+    semantic_ckpt = get_potential_checkpoint_path("semantic", semantic_trainer, prefix, results_folder_suffix)
+    print(f"loading semantic checkpoint {semantic_ckpt}")
+    if semantic_ckpt is not None:
+        semantic_trainer.load(semantic_ckpt)
+    return semantic_trainer
 
 # semantic_trainer.train()
 
 ################
 
-coarse_transformer = CoarseTransformer(
-    num_semantic_tokens = wav2vec.codebook_size,
-    codebook_size = 1024,
-    num_coarse_quantizers = 3,
-    dim = 512,
-    depth = 6
-)
+def get_coarse_transformer():
+    coarse_transformer = CoarseTransformer(
+        num_semantic_tokens = wav2vec.codebook_size,
+        codebook_size = 1024,
+        num_coarse_quantizers = 3,
+        dim = 512,
+        depth = 6
+    ).cuda()
+    return coarse_transformer
 
-coarse_trainer = CoarseTransformerTrainer(
-    transformer = coarse_transformer,
-    codec = codec,
-    wav2vec = wav2vec,
-    dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
-    folder = dataset_folder,
-    batch_size = batch_size,
-    grad_accum_every = grad_accum_every,
-    data_max_length = data_max_length,
-    data_max_length_seconds = data_max_length_seconds,
-    results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
-    num_train_steps = num_train_steps,
-    save_results_every = save_every,
-    save_model_every = save_every,
-    force_clear_prev_results = False,
-)
+def get_coarse_trainer(coarse_transformer):
+    coarse_trainer = CoarseTransformerTrainer(
+        transformer = coarse_transformer,
+        codec = codec,
+        wav2vec = wav2vec,
+        dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
+        folder = dataset_folder,
+        batch_size = batch_size,
+        grad_accum_every = grad_accum_every,
+        data_max_length = data_max_length,
+        data_max_length_seconds = data_max_length_seconds,
+        results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
+        num_train_steps = num_train_steps,
+        save_results_every = save_every,
+        save_model_every = save_every,
+        force_clear_prev_results = False,
+    )
 
-coarse_ckpt = get_potential_checkpoint_path("coarse", coarse_trainer, prefix, results_folder_suffix)
-print(f"loading coarse checkpoint {coarse_ckpt}")
-if coarse_ckpt is not None:
-    coarse_trainer.load(coarse_ckpt)
+    coarse_ckpt = get_potential_checkpoint_path("coarse", coarse_trainer, prefix, results_folder_suffix)
+    print(f"loading coarse checkpoint {coarse_ckpt}")
+    if coarse_ckpt is not None:
+        coarse_trainer.load(coarse_ckpt)
+    return coarse_trainer
 
 # coarse_trainer.train()
 
 ################
 
-fine_transformer = FineTransformer(
-    num_coarse_quantizers = 3,
-    num_fine_quantizers = 5,
-    codebook_size = 1024,
-    dim = 512,
-    depth = 6
-)
+def get_fine_transformer():
+    fine_transformer = FineTransformer(
+        num_coarse_quantizers = 3,
+        num_fine_quantizers = 5,
+        codebook_size = 1024,
+        dim = 512,
+        depth = 6
+    ).cuda()
+    return fine_transformer
 
-fine_trainer = FineTransformerTrainer(
-    transformer = fine_transformer,
-    codec = codec,
-    dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
-    folder = dataset_folder,
-    batch_size = batch_size,
-    grad_accum_every = grad_accum_every,
-    data_max_length = data_max_length,
-    data_max_length_seconds = data_max_length_seconds,
-    num_train_steps = num_train_steps,
-    save_results_every = save_every,
-    save_model_every = save_every,
-    results_folder = f"{prefix}/fine_results_{results_folder_suffix}",
-    force_clear_prev_results = False,
-)
+def get_fine_trainer(fine_transformer):
+    fine_trainer = FineTransformerTrainer(
+        transformer = fine_transformer,
+        codec = codec,
+        dataset = dataset, # dataset and folder generally don't show up together-- only one will be defined per run configuration
+        folder = dataset_folder,
+        batch_size = batch_size,
+        grad_accum_every = grad_accum_every,
+        data_max_length = data_max_length,
+        data_max_length_seconds = data_max_length_seconds,
+        num_train_steps = num_train_steps,
+        save_results_every = save_every,
+        save_model_every = save_every,
+        results_folder = f"{prefix}/fine_results_{results_folder_suffix}",
+        force_clear_prev_results = False,
+    )
 
-fine_ckpt = get_potential_checkpoint_path("fine", fine_trainer, prefix, results_folder_suffix)
-print(f"loading fine checkpoint {fine_ckpt}")
-if fine_ckpt is not None:
-    fine_trainer.load(fine_ckpt)
+    fine_ckpt = get_potential_checkpoint_path("fine", fine_trainer, prefix, results_folder_suffix)
+    print(f"loading fine checkpoint {fine_ckpt}")
+    if fine_ckpt is not None:
+        fine_trainer.load(fine_ckpt)
+    return fine_trainer
 
 # fine_trainer.train()
 
@@ -357,17 +369,33 @@ def train(profiler=None):
     # if profiler is not None:
     #     profiler.step()
     if args.train_or_eval == "evaluate":
-        step = semantic_trainer.steps.item()
+        # step = semantic_trainer.steps.item()
         # assert semantic_trainer.steps.item() == coarse_trainer.steps.item() and coarse_trainer.steps.item() == fine_trainer.steps.item(), "all three trainers should have the same number of steps when fully trained"
+        semantic_transformer = get_semantic_transformer()
+        semantic_trainer = get_semantic_trainer(semantic_transformer)
+        semantic_trainer.print(f"semantic trainer steps: {semantic_trainer.steps.item()}")
+        step = semantic_trainer.steps.item()
+
+        coarse_transformer = get_coarse_transformer()
+        coarse_trainer = get_coarse_trainer(coarse_transformer)
+        coarse_trainer.print(f"coarse trainer steps: {coarse_trainer.steps.item()}")
+
+        fine_transformer = get_fine_transformer()
+        fine_trainer = get_fine_trainer(fine_transformer)
+        fine_trainer.print(f"fine trainer steps: {fine_trainer.steps.item()}")
+
         if semantic_trainer.is_main:
             get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
         return
     elif args.train_or_eval == "train_semantic":
-        trainer = semantic_trainer
+        transformer = get_semantic_transformer()
+        trainer = get_semantic_trainer(transformer)
     elif args.train_or_eval == "train_coarse":
-        trainer = coarse_trainer
+        transformer = get_coarse_transformer()
+        trainer = get_coarse_trainer(transformer)
     elif args.train_or_eval == "train_fine":
-        trainer = fine_trainer
+        transformer = get_fine_transformer()
+        trainer = get_fine_trainer(transformer)
     else:
         raise AssertionError(f"train_or_eval argument {args.train_or_eval} not recognized, should be unreachable")
     print(f"training using {args.train_or_eval} trainer")
