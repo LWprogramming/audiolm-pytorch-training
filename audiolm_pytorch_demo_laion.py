@@ -359,6 +359,8 @@ def train(profiler=None):
     if args.train_or_eval == "evaluate":
         step = semantic_trainer.steps.item()
         # assert semantic_trainer.steps.item() == coarse_trainer.steps.item() and coarse_trainer.steps.item() == fine_trainer.steps.item(), "all three trainers should have the same number of steps when fully trained"
+        print(f"coarse trainer device {coarse_trainer.device}")
+        print(f"semantic trainer is main {semantic_trainer.is_main}")
         if semantic_trainer.is_main:
             print(f"corase trainer device {coarse_trainer.device}")
             get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
