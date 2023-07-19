@@ -16,7 +16,7 @@
 
 # parse arguments
 # Unfortunately, the `getopts` function in bash only supports single-character options, can't name it without a more complicated solution
-while getopts "r:p:s:" opt; do
+while getopts "r:p:s:c:" opt; do
   case ${opt} in
     r)
       RUN_MODE=$OPTARG
