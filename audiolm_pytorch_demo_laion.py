@@ -400,6 +400,9 @@ def train(profiler=None):
         raise AssertionError(f"train_or_eval argument {args.train_or_eval} not recognized, should be unreachable")
     print(f"training using {args.train_or_eval} trainer")
     trainer.train()
+    print(f"trainer finished training on device {trainer.device}, waiting on others")
+    trainer.accelerator.wait_for_everyone()
+    print(f"trainer on device {trainer.device} finished waiting on others, exiting")
 
 def trace_handler(prof):
     profile_log = f"{prefix}/profiler_{args.slurm_job_id}.txt"
