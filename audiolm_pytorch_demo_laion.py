@@ -381,6 +381,7 @@ def train(profiler=None):
         semantic_transformer.load(semantic_ckpt)
         coarse_transformer.load(coarse_ckpt)
         fine_transformer.load(fine_ckpt)
+        assert semantic_transformer.device == coarse_transformer.device and coarse_transformer.device == fine_transformer.device and semantic_transformer.device == 0, "all three transformers should be on the same device and there should only be 1 device"
         print("loaded checkpoints. sampling now...")
         get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer)
         print("sampled. exiting.")
