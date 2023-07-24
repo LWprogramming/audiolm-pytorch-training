@@ -139,7 +139,7 @@ hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
 print(f"training on audiolm_pytorch version {audiolm_pytorch.version.__version__}")
-def get_potential_checkpoint_path(transformer_name, trainer, prefix, results_folder_suffix):
+def get_potential_checkpoint_path(transformer_name, prefix, results_folder_suffix):
     """Determine checkpoint paths based on slurm_job_id CLI argument. searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
     assert transformer_name in {"semantic", "coarse", "fine"}
 
@@ -150,9 +150,6 @@ def get_potential_checkpoint_path(transformer_name, trainer, prefix, results_fol
     checkpoints = [f for f in os.listdir(results_folder) if f.endswith('.pt')]
     steps = [int(re.findall(r'\d+', ckpt)[-1]) for ckpt in checkpoints]
     max_step = max(steps, default=0)
-
-    if max_step % trainer.save_model_every != 0 or max_step > trainer.num_train_steps:
-        raise ValueError(f"Invalid checkpoint step, with max_step {max_step} and save_model_every {trainer.save_model_every} and num_train_steps {trainer.num_train_steps}")
 
     return f"{results_folder}/{transformer_name}.transformer.{max_step}.pt" if max_step > 0 else None
 
@@ -262,7 +259,7 @@ def get_semantic_trainer(semantic_transformer):
         force_clear_prev_results = False,
     )
 
-    semantic_ckpt = get_potential_checkpoint_path("semantic", semantic_trainer, prefix, results_folder_suffix)
+    semantic_ckpt = get_potential_checkpoint_path("semantic", prefix, results_folder_suffix)
     print(f"loading semantic checkpoint {semantic_ckpt}")
     if semantic_ckpt is not None:
         semantic_trainer.load(semantic_ckpt)
@@ -300,7 +297,7 @@ def get_coarse_trainer(coarse_transformer):
         force_clear_prev_results = False,
     )
 
-    coarse_ckpt = get_potential_checkpoint_path("coarse", coarse_trainer, prefix, results_folder_suffix)
+    coarse_ckpt = get_potential_checkpoint_path("coarse", prefix, results_folder_suffix)
     print(f"loading coarse checkpoint {coarse_ckpt}")
     if coarse_ckpt is not None:
         coarse_trainer.load(coarse_ckpt)
@@ -337,7 +334,7 @@ def get_fine_trainer(fine_transformer):
         force_clear_prev_results = False,
     )
 
-    fine_ckpt = get_potential_checkpoint_path("fine", fine_trainer, prefix, results_folder_suffix)
+    fine_ckpt = get_potential_checkpoint_path("fine", prefix, results_folder_suffix)
     print(f"loading fine checkpoint {fine_ckpt}")
     if fine_ckpt is not None:
         fine_trainer.load(fine_ckpt)
@@ -347,7 +344,7 @@ def get_fine_trainer(fine_transformer):
 
 ################
 # All together now
-def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step):
+def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer):
     # Generate output and save
     audiolm = AudioLM(
         wav2vec = wav2vec,
@@ -358,7 +355,8 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
     )
 
     generated_wav = audiolm(batch_size = 1)
-    output_path = f"{prefix}/out_job_id_{args.slurm_job_id}_step_{step}.wav"
+    # output_path = f"{prefix}/out_job_id_{args.slurm_job_id}_step_{step}.wav"
+    output_path = f"{prefix}/out_job_id_{args.slurm_job_id}.wav"
     sample_rate = 24000
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
@@ -372,20 +370,20 @@ def train(profiler=None):
         # step = semantic_trainer.steps.item()
         # assert semantic_trainer.steps.item() == coarse_trainer.steps.item() and coarse_trainer.steps.item() == fine_trainer.steps.item(), "all three trainers should have the same number of steps when fully trained"
         semantic_transformer = get_semantic_transformer()
-        semantic_trainer = get_semantic_trainer(semantic_transformer)
-        semantic_trainer.print(f"semantic trainer steps: {semantic_trainer.steps.item()}")
-        step = semantic_trainer.steps.item()
-
         coarse_transformer = get_coarse_transformer()
-        coarse_trainer = get_coarse_trainer(coarse_transformer)
-        coarse_trainer.print(f"coarse trainer steps: {coarse_trainer.steps.item()}")
-
         fine_transformer = get_fine_transformer()
-        fine_trainer = get_fine_trainer(fine_transformer)
-        fine_trainer.print(f"fine trainer steps: {fine_trainer.steps.item()}")
+        # sampling using one gpu only, so just load info about the transformers instead of using the trainer's load method
+        semantic_ckpt = get_potential_checkpoint_path("semantic", prefix, results_folder_suffix)
+        coarse_ckpt = get_potential_checkpoint_path("coarse", prefix, results_folder_suffix)
+        fine_ckpt = get_potential_checkpoint_path("fine", prefix, results_folder_suffix)
+        assert semantic_ckpt is not None and coarse_ckpt is not None and fine_ckpt is not None, "all three checkpoints should exist"
 
-        if semantic_trainer.is_main:
-            get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer, step)
+        semantic_transformer.load(semantic_ckpt)
+        coarse_transformer.load(coarse_ckpt)
+        fine_transformer.load(fine_ckpt)
+        print("loaded checkpoints. sampling now...")
+        get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_transformer)
+        print("sampled. exiting.")
         return
     elif args.train_or_eval == "train_semantic":
         transformer = get_semantic_transformer()
