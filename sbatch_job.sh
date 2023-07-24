@@ -70,4 +70,4 @@ accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_
 accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_fine
 
 # evaluate separately
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval evaluate
+python audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval evaluate
