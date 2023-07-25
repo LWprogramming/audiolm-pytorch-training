@@ -58,7 +58,7 @@ class CocochoralesCustomDataset(Dataset):
 
         assert max_length is not None, "max_length must be specified"
         self.max_length = cast_tuple(max_length, num_outputs)
-        min_seconds = 30
+        min_seconds = 20 # Set this to the minimum length for audio files concatenated + moment of silence in between. After a brief look at the cocochorales dataset, I find that in subdir 1 the shortest audio is just over 13 seconds, so 2 concatenated audios should comfortably fill out 20.
         for i in range(num_outputs):
             # ensure max_length is long enough so we can learn accompaniment over a long time range
             assert self.max_length[i] >= min_seconds * self.target_sample_hz[i], f"max_length must be at least {min_seconds} seconds * target_sample_hz"
