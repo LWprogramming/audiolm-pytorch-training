@@ -30,6 +30,9 @@ while getopts "r:p:s:c:" opt; do
     c)
       CHECKPOINT_SLURM_JOB_ID=$OPTARG
       ;;
+    t)
+      TRANSFORMER_TO_TARGET=$OPTARG # should be one of semantic, coarse, or fine. or just leave it blank for eval mode.
+      ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
       exit 1
@@ -65,9 +68,16 @@ echo "with profiling: " $WITH_PROFILING
 echo "slurm job id to actually use: " $OVERRIDABLE_SLURM_JOB_ID
 
 # Transformers need to be trained separately, see: https://github.com/lucidrains/audiolm-pytorch/issues/209#issuecomment-1640777646
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_semantic
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_coarse
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval train_fine
+# Set default to eval mode
+TRAIN_OR_EVAL=""
+# Check if transformer target is set
+if [ -n "$TRANSFORMER_TO_TARGET" ]; then
+  TRAIN_OR_EVAL="train_$TRANSFORMER_TO_TARGET"
+else
+  TRAIN_OR_EVAL="evaluate"
+fi
 
-# evaluate separately
-python audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval evaluate
+# Launch training command with dynamic train target
+accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval $TRAIN_OR_EVAL
+# Separate evaluate command
+python audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval $TRAIN_OR_EVAL
