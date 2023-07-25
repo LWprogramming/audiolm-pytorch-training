@@ -4,6 +4,9 @@ import os
 import subprocess
 
 # usage: python aws_ckpt_backup_script.py <job_id> <bucket_prefix optional>
+
+# aws cp commands in shell look like aws s3 cp /fsx/itsleonwu/audiolm-pytorch-training/sbatch_job_1.sh s3://s-laion/itsleonwu/slurm-job-1-audiolm-0.1.0/sbatch_job.sh --profile laion-stability-my-s3-bucket
+
 # backs up checkpoints to s3
 # my personal bucket is named "itsleonwu-laion"
 
