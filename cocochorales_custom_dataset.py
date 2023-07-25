@@ -37,11 +37,11 @@ class CocochoralesCustomDataset(Dataset):
     |-- 4_cello.wav
     These wav files used to be in the stem_audio subfolder, but the downloader script moves them up one level and cleans out the other files and folders.
 
-    The `__getitem__` method processes audio files prefixed with `0_` and `3_`. It trims and aligns the audio data to create a sequence of equal length from both files, separated by a configurable (but default half-second) of silence. This allows transformers to learn harmonies from two parallel parts.
+    The `__getitem__` method processes audio files prefixed with `0_` and `3_`. It trims and aligns the audio data to create a sequence of equal length from both files, separated by a configurable amount of silence. This allows transformers to learn harmonies from two parallel parts.
 
     We also trim off the first and last half-second of each file (the audio around the edges of the sound file in the original dataset seem a little sketchy)
     """
-    def __init__(self, folder, max_length, target_sample_hz, silence_length_seconds=0.5):
+    def __init__(self, folder, max_length, target_sample_hz, silence_length_seconds=0.1):
         # intentionally leaving out seq_len_multiple_of which exists in the original AudioLM repo because I don't want to have to deal with it
         super().__init__()
         path = Path(folder)
