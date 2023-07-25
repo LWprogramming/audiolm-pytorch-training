@@ -41,7 +41,7 @@ class CocochoralesCustomDataset(Dataset):
 
     We also trim off the first and last half-second of each file (the audio around the edges of the sound file in the original dataset seem a little sketchy)
     """
-    def __init__(self, folder, max_length, target_sample_hz, silence_length_seconds=0.1):
+    def __init__(self, folder, max_length_samples, target_sample_hz, silence_length_seconds=0.1):
         # intentionally leaving out seq_len_multiple_of which exists in the original AudioLM repo because I don't want to have to deal with it
         super().__init__()
         path = Path(folder)
@@ -56,12 +56,15 @@ class CocochoralesCustomDataset(Dataset):
         self.target_sample_hz = cast_tuple(target_sample_hz)
         num_outputs = len(self.target_sample_hz)
 
-        assert max_length is not None, "max_length must be specified"
-        self.max_length = cast_tuple(max_length, num_outputs)
-        min_seconds = 10 # Set this to the minimum length for audio files concatenated + moment of silence in between. After a brief look at the cocochorales dataset, I find that in subdir 1 the shortest audio is just over 13 seconds, so 2 concatenated audios should comfortably fill out 20, so we just make minimum 10 so we can learn from at least 5-ish seconds of audio
-        for i in range(num_outputs):
-            # ensure max_length is long enough so we can learn accompaniment over a long time range
-            assert self.max_length[i] >= min_seconds * self.target_sample_hz[i], f"max_length must be at least {min_seconds} seconds * target_sample_hz"
+        assert max_length_samples is not None, "max_length must be specified"
+        self.max_length = cast_tuple(max_length_samples, num_outputs)
+
+        # TODO: eventually uncomment this section about max_length when you figure out your OOM woes
+        # min_seconds = 10 # Set this to the minimum length for audio files concatenated + moment of silence in between. After a brief look at the cocochorales dataset, I find that in subdir 1 the shortest audio is just over 13 seconds, so 2 concatenated audios should comfortably fill out 20, so we just make minimum 10 so we can learn from at least 5-ish seconds of audio
+        # for i in range(num_outputs):
+        #     # ensure max_length is long enough so we can learn accompaniment over a long time range
+        #     assert self.max_length[i] >= min_seconds * self.target_sample_hz[i], f"max_length must be at least {min_seconds} seconds * target_sample_hz"
+
         # self.seq_len_multiple_of = cast_tuple(seq_len_multiple_of, num_outputs)
         # assert len(self.max_length) == len(self.target_sample_hz) == len(self.seq_len_multiple_of)
 
@@ -273,7 +276,7 @@ def get_dataloader(ds, pad_to_longest = True, **kwargs):
 #         return output
 
 if __name__ == "__main__":
-    dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1', target_sample_hz=16000, max_length=16000*30)
+    dataset = CocochoralesCustomDataset(folder='/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1/1', target_sample_hz=16000, max_length_samples=16000 * 30)
     dataloader = get_dataloader(dataset, batch_size=1, num_workers=0, shuffle=True)
     for batch in dataloader:
         print(f"len batch is {len(batch)} and first elemtn has shape {batch[0].shape}") # one element of shape 1 x num_samples

@@ -21,6 +21,8 @@ import random
 import numpy as np
 from torch.utils.data import DataLoader
 
+import cocochorales_custom_dataset
+
 # import boto3
 # import datetime
 # from botocore.errorfactory import ClientError
@@ -60,15 +62,31 @@ if args.with_profiling:
 results_folder_suffix = str(args.slurm_job_id)
 print("parsed args")
 
+# CALCULATIONS FOR MEMORY USAGE AND TRAINING TIME
+# 1 step of grad_accum ~ 1-1.5 s for all transformers.
+#   I benchmarked this and found semantic takes 18 seconds, coarse 30, and fine 17 for 20 steps when grad_accum_every = 1.
+# 24 hour run = 86400 seconds
+# openslr POC: batch = 96, grad accum every -> effective batch size = 96.
+#   3600 steps in an hour, since once per second
+# cocochorales_test_custom_dataset POC: batch = 2, grad accum every = 32 -> effective batch size = 64.
+#   32 seconds per step -> 2700 train steps in 24 hrs, ~ 100 steps in an hour
+# MEMORY USAGE
+# semantic ckpt = 711171207 = 711 MB
+# coarse ckpt = 240917647 = 240 MB
+# fine ckpt = 296873867 = 296 MB
+#   So: ckpt once an hour, 24 ckpts for each of the three transformers ~ 30 GB
+
 # dataset and dataset_folder generally don't show up together-- only one will be defined per run configuration
+cocochorales_audio_frequency = 16000
+
 if args.run_mode == "openslr":
     dataset = None
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/LibriSpeech-dev-clean/dev-clean"
-    num_train_steps = 1000000
-    save_every = 5000
-    batch_size = 8
-    grad_accum_every = 16
-    data_max_length = 24000
+    num_train_steps = 86401
+    save_every = 3600
+    batch_size = 96
+    grad_accum_every = 1
+    data_max_length = 24000 # aka 1 second because openslr is 24kHz
     data_max_length_seconds = None
 elif args.run_mode == "bare_minimum":
     dataset = None
@@ -101,14 +119,18 @@ elif args.run_mode == "cocochorales_overfit":
     data_max_length_seconds = None
 elif args.run_mode == "cocochorales_test_custom_dataset":
     # try writing a custom Dataset for concatenating samples to learn accompaniments
-    raise AssertionError("not implemented yet")
-    dataset = None
-    dataset_folder = None
-    num_train_steps = 5000
-    save_every = 1000
-    batch_size = 1
-    grad_accum_every = 1
-    data_max_length = 24000
+    # raise AssertionError("not implemented yet")
+    folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/cocochorales_main_dataset_v1"
+    max_length_samples = 16000 * 15 # cocochorales is 16kHz, we want 15 seconds
+    target_sample_hz = cocochorales_audio_frequency
+    silence_length_seconds = 0.1
+    dataset = cocochorales_custom_dataset.CocochoralesCustomDataset(folder, max_length_samples, target_sample_hz, silence_length_seconds)
+    dataset_folder = None # set to None because we're using a custom dataset
+    num_train_steps = 2401
+    save_every = 100
+    batch_size = 2
+    grad_accum_every = 32
+    data_max_length = max_length_samples
     data_max_length_seconds = None
 elif args.run_mode == "test_long_sample":
     # try out really long lengths to get a sense of how long the data input can be
@@ -123,6 +145,7 @@ elif args.run_mode == "test_long_sample":
     dataset_folder = "/fsx/itsleonwu/audiolm-pytorch-datasets/test_long_sample"
     num_train_steps = 100
     save_every = 50
+    # TODO: this seems to OOM in multi-gpu training. why?
     batch_size = 8
     grad_accum_every = 16
     data_max_length = None
