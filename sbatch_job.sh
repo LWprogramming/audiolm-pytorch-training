@@ -73,11 +73,8 @@ TRAIN_OR_EVAL=""
 # Check if transformer target is set
 if [ -n "$TRANSFORMER_TO_TARGET" ]; then
   TRAIN_OR_EVAL="train_$TRANSFORMER_TO_TARGET"
+  accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval $TRAIN_OR_EVAL
 else
   TRAIN_OR_EVAL="evaluate"
+  python audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval $TRAIN_OR_EVAL
 fi
-
-# Launch training command with dynamic train target
-accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval $TRAIN_OR_EVAL
-# Separate evaluate command
-python audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --slurm_job_id $CHECKPOINT_SLURM_JOB_ID --train_or_eval $TRAIN_OR_EVAL
