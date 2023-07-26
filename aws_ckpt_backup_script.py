@@ -11,7 +11,7 @@ import subprocess
 # my personal bucket is named "itsleonwu-laion"
 
 job_id = sys.argv[1]
-if len(sys.argv) == 2:
+if len(sys.argv) == 3:
     bucket_prefix = sys.argv[2]
 else:
     bucket_prefix = "s-laion/itsleonwu" # default into my own personal folder 
