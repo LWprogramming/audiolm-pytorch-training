@@ -177,18 +177,25 @@ hubert_ckpt = f'hubert/hubert_base_ls960.pt'
 hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuBERT Base (~95M params)", column Quantizer
 
 print(f"training on audiolm_pytorch version {audiolm_pytorch.version.__version__}")
-def get_potential_checkpoint_path(transformer_name, prefix, results_folder_suffix):
-    """Determine checkpoint paths based on the checkpoint id for the transformer specified by transformer_name and prefix. searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
-    assert transformer_name in {"semantic", "coarse", "fine"}
 
-    results_folder = f"{prefix}/{transformer_name}_results_{results_folder_suffix}"
+def get_results_folder_path(transformer_name, prefix, results_folder_slurm_job_id):
+    assert transformer_name in {"semantic", "coarse", "fine"}
+    results_folder = f"{prefix}/{transformer_name}_results_{results_folder_slurm_job_id}"
+    return results_folder
+
+def get_potential_checkpoint_num_steps(results_folder):
     if not os.path.exists(results_folder):
         return None
 
     checkpoints = [f for f in os.listdir(results_folder) if f.endswith('.pt')]
     steps = [int(re.findall(r'\d+', ckpt)[-1]) for ckpt in checkpoints]
     max_step = max(steps, default=0)
+    return max_step
 
+def get_potential_checkpoint_path(transformer_name, prefix, results_folder_slurm_job_id):
+    """Determine checkpoint paths based on the checkpoint id for the transformer specified by transformer_name and prefix. searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
+    results_folder = get_results_folder_path(transformer_name, prefix, results_folder_slurm_job_id)
+    max_step = get_potential_checkpoint_num_steps(results_folder)
     return f"{results_folder}/{transformer_name}.transformer.{max_step}.pt" if max_step > 0 else None
 
 
@@ -393,7 +400,13 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
     )
 
     generated_wav = audiolm(batch_size = 1)
-    output_path = f"{prefix}/out_semantic_{args.semantic_checkpoint_job_id}_coarse_{args.coarse_checkpoint_job_id}_fine_{args.fine_checkpoint_job_id}_steps.wav"
+    semantic_results_folder = get_results_folder_path("semantic", prefix, semantic_results_folder_suffix)
+    semantic_num_steps = get_potential_checkpoint_num_steps(semantic_results_folder)
+    coarse_results_folder = get_results_folder_path("coarse", prefix, coarse_results_folder_suffix)
+    coarse_num_steps = get_potential_checkpoint_num_steps(coarse_results_folder)
+    fine_results_folder = get_results_folder_path("fine", prefix, fine_results_folder_suffix)
+    fine_num_steps = get_potential_checkpoint_num_steps(fine_results_folder)
+    output_path = f"{prefix}/out_semantic_id_{args.semantic_checkpoint_job_id}_steps_{semantic_num_steps}_coarse_id_{args.coarse_checkpoint_job_id}_steps_{coarse_num_steps}_fine_id_{args.fine_checkpoint_job_id}_steps_{fine_num_steps}.wav"
     sample_rate = 24000
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
