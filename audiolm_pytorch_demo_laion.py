@@ -42,7 +42,11 @@ torch.backends.cudnn.benchmark = False
 
 # Checkpoint loading. Expect format to be something like /path/to/semantic.transformer.20000.pt
 parser = argparse.ArgumentParser()
-parser.add_argument('--slurm_job_id', type=int, help='slurm job id, used for creating results folders', required=True)
+# split the checkpoint job id into one per transformer, because we need to train them separately
+# If we're in train but all the other checkpoint job ids are set, that's ok, we just ignore them
+parser.add_argument('--semantic_checkpoint_job_id', type=int, help='slurm job id for semantic transformer', required=False)
+parser.add_argument('--coarse_checkpoint_job_id', type=int, help='slurm job id for coarse transformer', required=False)
+parser.add_argument('--fine_checkpoint_job_id', type=int, help='slurm job id for fine transformer', required=False)
 parser.add_argument('--train_or_eval', type=str, help="decide which transformer to train (pick from choices)", choices=["train_semantic", "train_coarse", "train_fine", "evaluate"], required=True)
 parser.add_argument('--run_mode',
                     type=str,
@@ -59,7 +63,18 @@ parser.add_argument("--with_profiling", type=bool, default=False, nargs='?', con
 args = parser.parse_args()
 if args.with_profiling:
     raise NotImplementedError("Profiling is not implemented yet. see train() function below")
-results_folder_suffix = str(args.slurm_job_id)
+if args.train_or_eval == "train_semantic":
+    assert args.semantic_checkpoint_job_id is not None, "semantic_checkpoint_job_id must be defined if train_or_eval is train_semantic"
+elif args.train_or_eval == "train_coarse":
+    assert args.coarse_checkpoint_job_id is not None, "coarse_checkpoint_job_id must be defined if train_or_eval is train_coarse"
+elif args.train_or_eval == "train_fine":
+    assert args.fine_checkpoint_job_id is not None, "fine_checkpoint_job_id must be defined if train_or_eval is train_fine"
+else:
+    assert args.semantic_checkpoint_job_id is not None and args.coarse_checkpoint_job_id is not None and args.fine_checkpoint_job_id is not None, "semantic_checkpoint_job_id, coarse_checkpoint_job_id, and fine_checkpoint_job_id must be defined if train_or_eval is evaluate"
+
+semantic_results_folder_suffix = str(args.semantic_checkpoint_job_id)
+coarse_results_folder_suffix = str(args.coarse_checkpoint_job_id)
+fine_results_folder_suffix = str(args.fine_checkpoint_job_id)
 print("parsed args")
 
 # CALCULATIONS FOR MEMORY USAGE AND TRAINING TIME
@@ -163,7 +178,7 @@ hubert_quantizer = f'hubert/hubert_base_ls960_L9_km500.bin' # listed in row "HuB
 
 print(f"training on audiolm_pytorch version {audiolm_pytorch.version.__version__}")
 def get_potential_checkpoint_path(transformer_name, prefix, results_folder_suffix):
-    """Determine checkpoint paths based on slurm_job_id CLI argument. searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
+    """Determine checkpoint paths based on the checkpoint id for the transformer specified by transformer_name and prefix. searches in `prefix` folder) or latest available checkpoints in `prefix` folder. Returns None if no such checkpoints exist at all."""
     assert transformer_name in {"semantic", "coarse", "fine"}
 
     results_folder = f"{prefix}/{transformer_name}_results_{results_folder_suffix}"
@@ -278,11 +293,11 @@ def get_semantic_trainer(semantic_transformer):
         num_train_steps = num_train_steps,
         save_results_every = save_every,
         save_model_every = save_every,
-        results_folder = f"{prefix}/semantic_results_{results_folder_suffix}",
+        results_folder = f"{prefix}/semantic_results_{semantic_results_folder_suffix}",
         force_clear_prev_results = False,
     )
 
-    semantic_ckpt = get_potential_checkpoint_path("semantic", prefix, results_folder_suffix)
+    semantic_ckpt = get_potential_checkpoint_path("semantic", prefix, semantic_results_folder_suffix)
     print(f"loading semantic checkpoint {semantic_ckpt}")
     if semantic_ckpt is not None:
         semantic_trainer.load(semantic_ckpt)
@@ -313,14 +328,14 @@ def get_coarse_trainer(coarse_transformer):
         grad_accum_every = grad_accum_every,
         data_max_length = data_max_length,
         data_max_length_seconds = data_max_length_seconds,
-        results_folder = f"{prefix}/coarse_results_{results_folder_suffix}",
+        results_folder = f"{prefix}/coarse_results_{coarse_results_folder_suffix}",
         num_train_steps = num_train_steps,
         save_results_every = save_every,
         save_model_every = save_every,
         force_clear_prev_results = False,
     )
 
-    coarse_ckpt = get_potential_checkpoint_path("coarse", prefix, results_folder_suffix)
+    coarse_ckpt = get_potential_checkpoint_path("coarse", prefix, coarse_results_folder_suffix)
     print(f"loading coarse checkpoint {coarse_ckpt}")
     if coarse_ckpt is not None:
         coarse_trainer.load(coarse_ckpt)
@@ -353,11 +368,11 @@ def get_fine_trainer(fine_transformer):
         num_train_steps = num_train_steps,
         save_results_every = save_every,
         save_model_every = save_every,
-        results_folder = f"{prefix}/fine_results_{results_folder_suffix}",
+        results_folder = f"{prefix}/fine_results_{fine_results_folder_suffix}",
         force_clear_prev_results = False,
     )
 
-    fine_ckpt = get_potential_checkpoint_path("fine", prefix, results_folder_suffix)
+    fine_ckpt = get_potential_checkpoint_path("fine", prefix, fine_results_folder_suffix)
     print(f"loading fine checkpoint {fine_ckpt}")
     if fine_ckpt is not None:
         fine_trainer.load(fine_ckpt)
@@ -378,8 +393,7 @@ def get_sample(wav2vec, codec, semantic_transformer, coarse_transformer, fine_tr
     )
 
     generated_wav = audiolm(batch_size = 1)
-    # output_path = f"{prefix}/out_job_id_{args.slurm_job_id}_step_{step}.wav"
-    output_path = f"{prefix}/out_job_id_{args.slurm_job_id}.wav"
+    output_path = f"{prefix}/out_semantic_{args.semantic_checkpoint_job_id}_coarse_{args.coarse_checkpoint_job_id}_fine_{args.fine_checkpoint_job_id}_steps.wav"
     sample_rate = 24000
     torchaudio.save(output_path, generated_wav.cpu(), sample_rate)
 
@@ -396,9 +410,9 @@ def train(profiler=None):
         coarse_transformer = get_coarse_transformer()
         fine_transformer = get_fine_transformer()
         # sampling using one gpu only, so just load info about the transformers instead of using the trainer's load method
-        semantic_ckpt = get_potential_checkpoint_path("semantic", prefix, results_folder_suffix)
-        coarse_ckpt = get_potential_checkpoint_path("coarse", prefix, results_folder_suffix)
-        fine_ckpt = get_potential_checkpoint_path("fine", prefix, results_folder_suffix)
+        semantic_ckpt = get_potential_checkpoint_path("semantic", prefix, semantic_results_folder_suffix)
+        coarse_ckpt = get_potential_checkpoint_path("coarse", prefix, coarse_results_folder_suffix)
+        fine_ckpt = get_potential_checkpoint_path("fine", prefix, fine_results_folder_suffix)
         assert semantic_ckpt is not None and coarse_ckpt is not None and fine_ckpt is not None, "all three checkpoints should exist"
 
         semantic_transformer.load(semantic_ckpt)
@@ -427,6 +441,7 @@ def train(profiler=None):
     print(f"trainer on device {trainer.device} finished waiting on others, exiting")
 
 def trace_handler(prof):
+    raise AssertionError(f"need to overwrite args.slurm_job_id with the appropriate cli now that I've separated training the three models into three separate jobs. Don't wanna do it now")
     profile_log = f"{prefix}/profiler_{args.slurm_job_id}.txt"
     # Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time spent in children operator calls, while total cpu time includes it.
     print(f"arrived in trace_handler, logfile name {profile_log}")
