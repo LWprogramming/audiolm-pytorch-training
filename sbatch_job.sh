@@ -38,7 +38,7 @@ while getopts "r:p:s:S:C:F:t:" opt; do
       FINE_CHECKPOINT_SLURM_JOB_ID=$OPTARG
       ;;
     t)
-      TRANSFORMER_TO_TARGET=$OPTARG # should be one of semantic, coarse, or fine. or just leave it blank for eval mode.
+      TRANSFORMER_TO_TARGET=$OPTARG # should be one of semantic, coarse, or fine. or just leave it blank for eval mode. Don't do -t evaluate
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
@@ -78,12 +78,11 @@ echo "slurm job id to actually use: " $OVERRIDABLE_SLURM_JOB_ID
 
 # Transformers need to be trained separately, see: https://github.com/lucidrains/audiolm-pytorch/issues/209#issuecomment-1640777646
 # Set default to eval mode
-TRAIN_OR_EVAL=""
+TRAIN_OR_EVAL="evaluate"
 # Check if transformer target is set
 if [ -n "$TRANSFORMER_TO_TARGET" ]; then
   TRAIN_OR_EVAL="train_$TRANSFORMER_TO_TARGET"
   accelerate launch audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --train_or_eval $TRAIN_OR_EVAL --semantic_checkpoint_job_id $SEMANTIC_CHECKPOINT_SLURM_JOB_ID --coarse_checkpoint_job_id $COARSE_CHECKPOINT_SLURM_JOB_ID --fine_checkpoint_job_id $FINE_CHECKPOINT_SLURM_JOB_ID
 else
-  TRAIN_OR_EVAL="evaluate"
   python audiolm_pytorch_demo_laion_$OVERRIDABLE_SLURM_JOB_ID.py --run_mode $RUN_MODE $WITH_PROFILING --train_or_eval $TRAIN_OR_EVAL --semantic_checkpoint_job_id $SEMANTIC_CHECKPOINT_SLURM_JOB_ID --coarse_checkpoint_job_id $COARSE_CHECKPOINT_SLURM_JOB_ID --fine_checkpoint_job_id $FINE_CHECKPOINT_SLURM_JOB_ID
 fi
