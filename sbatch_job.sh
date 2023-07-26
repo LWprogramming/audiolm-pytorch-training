@@ -15,10 +15,10 @@
 # example usage:
 # Evaluate on 7785, 7786, 7787 checkpoints for semantic, coarse, and fine respectively
 # sbatch sbatch_job.sh -r cocochorales_test_custom_dataset -S 7785 -C 7786 -F 7787
-# train for semantic
-# sbatch sbatch_job.sh -r cocochorales_test_custom_dataset -t semantic
+# train for semantic on openslr dataset
+# sbatch sbatch_job.sh -r openslr -t semantic
 # restart coarse job from checkpoint of slurm job id 7786 using the training script from that job:
-# sbatch sbatch_job.sh -r cocochorales_test_custom_dataset -t coarse -C 7786 -s 7786
+# sbatch sbatch_job.sh -r openslr -t coarse -C 7786 -s 7786
 
 # parse arguments
 # Unfortunately, the `getopts` function in bash only supports single-character options, can't name it without a more complicated solution
