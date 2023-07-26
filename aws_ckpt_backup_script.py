@@ -37,14 +37,17 @@ subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/sba
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-training/audiolm_pytorch_demo_laion_{job_id}.py", f"s3://{bucket_prefix}/{s3_folder}/audiolm_pytorch_demo_laion.py", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/output-{job_id}.log", f"s3://{bucket_prefix}/{s3_folder}/output-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
 subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/error-{job_id}.log", f"s3://{bucket_prefix}/{s3_folder}/error-{job_id}.log", "--profile", "laion-stability-my-s3-bucket"])
-output_filename = f"out_job_id_{job_id}_step_{step}.wav" # should match what is saved in audiolm_pytorch_demo_laion.py
-subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/{output_filename}", f"s3://{bucket_prefix}/{s3_folder}/{output_filename}", "--profile", "laion-stability-my-s3-bucket"])
+# output_filename = f"out_job_id_{job_id}_step_{step}.wav" # should match what is saved in audiolm_pytorch_demo_laion.py
+# subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/{output_filename}", f"s3://{bucket_prefix}/{s3_folder}/{output_filename}", "--profile", "laion-stability-my-s3-bucket"])
 
 
 # Transfer checkpoints
 for folder in ["semantic_results", "coarse_results", "fine_results"]:
     full_folder_name = f"{folder}_{job_id}"
     folder_path = f"/fsx/itsleonwu/audiolm-pytorch-results/full_folder_name"
-    pt_files = [file for file in os.listdir(folder_path) if file.endswith('.pt')]
-    max_checkpoint = max(pt_files, key=lambda x: int(re.search(r"(\d+)(?=\.)", x).group(1)))
-    subprocess.run(["aws", "s3", "cp", f"{folder_path}/{max_checkpoint}", f"s3://{bucket_prefix}/{s3_folder}/{full_folder_name}/{max_checkpoint}", "--profile", "laion-stability-my-s3-bucket"])
+    if os.path.exists(folder_path):
+        # probably only one of these will exist if we're training different transformers in different jobs
+        pt_files = [file for file in os.listdir(folder_path) if file.endswith('.pt')]
+        if pt_files:
+            max_checkpoint = max(pt_files, key=lambda x: int(re.search(r"(\d+)(?=\.)", x).group(1)))
+            subprocess.run(["aws", "s3", "cp", f"{folder_path}/{max_checkpoint}", f"s3://{bucket_prefix}/{s3_folder}/{full_folder_name}/{max_checkpoint}", "--profile", "laion-stability-my-s3-bucket"])
