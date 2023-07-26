@@ -44,7 +44,7 @@ subprocess.run(["aws", "s3", "cp", f"/fsx/itsleonwu/audiolm-pytorch-results/erro
 # Transfer checkpoints
 for folder in ["semantic_results", "coarse_results", "fine_results"]:
     full_folder_name = f"{folder}_{job_id}"
-    folder_path = f"/fsx/itsleonwu/audiolm-pytorch-results/full_folder_name"
+    folder_path = f"/fsx/itsleonwu/audiolm-pytorch-results/{full_folder_name}"
     if os.path.exists(folder_path):
         # probably only one of these will exist if we're training different transformers in different jobs
         pt_files = [file for file in os.listdir(folder_path) if file.endswith('.pt')]
