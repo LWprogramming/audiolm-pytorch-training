@@ -14,11 +14,27 @@ def load_data(filename, loss_pattern, valid_loss_pattern):
         loss_match = loss_pattern.search(line)
         valid_loss_match = valid_loss_pattern.search(line)
 
+        # note: if job gets pre-empted, then we might end up with a restarted job and it won't start incrementing up in the same way again. in these cases, we'll have to restart the loss data from the last step that we have
         if loss_match:
             step, loss = int(loss_match.group(1)), float(loss_match.group(2))
+            previous_step = loss_data[-1][0] if len(loss_data) > 0 else -1
+            if step != previous_step + 1:
+                # find the relevant step
+                first_step = loss_data[0][0]
+                # if we have data for steps from 100 to 200 and we suddenly see an entry for step 147 after logging the 200th step, then we only keep the data from 146 onwards. therefore step - first_step = 47 here, and so we keep loss_data[:47] the same and then append the new data
+                loss_data = loss_data[:step - first_step]
+                # last_non_overwritten_step = step - first_step
             loss_data.append((step, loss))
         elif valid_loss_match:
             step, valid_loss = int(valid_loss_match.group(1)), float(valid_loss_match.group(2))
+            # similar logic for valid_loss_data, but because these might jump around, I think what we do is just find the index of where the current step appears in the valid_loss_data at the moment, and cut off that index and everything after it
+            previous_step = valid_loss_data[-1][0] if len(valid_loss_data) > 0 else -1
+            if step <= previous_step:
+                # find the relevant step. not going to use the most optimized tricks because valid_loss_data is really small and I don't want to debug this
+                for i in range(len(valid_loss_data)):
+                    if valid_loss_data[i][0] == step:
+                        valid_loss_data = valid_loss_data[:i]
+                        break
             valid_loss_data.append((step, valid_loss))
     print(f"loss data and valid loss data loaded from {filename} and have lengths {len(loss_data)} and {len(valid_loss_data)} respectively")
     return loss_data, valid_loss_data
